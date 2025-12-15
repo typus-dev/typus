@@ -1,4 +1,4 @@
-# Typus LITE v1.1.80
+# Typus LITE v1.1.91
 
 Complete snapshot release for LITE profile with profile switching system.
 
@@ -40,7 +40,7 @@ Complete snapshot release for LITE profile with profile switching system.
 
 ```bash
 # Extract archive
-tar -xzf lite-complete-1.1.80.tar.gz
+tar -xzf lite-complete-1.1.91.tar.gz
 cd typus-lite
 
 # Install dependencies (uses file: protocol for local modules)
@@ -57,7 +57,7 @@ cd @typus-core/frontend && npm install --production && cd ..
 
 1. Extract and configure:
    ```bash
-   tar -xzf lite-complete-1.1.80.tar.gz
+   tar -xzf lite-complete-1.1.91.tar.gz
    cd typus-lite
    cp .env.example .env
    # Edit .env for your database and secrets
@@ -119,4 +119,4 @@ This is a **STANDARD** snapshot:
 - Uses file: protocol for local modules
 - Best for bandwidth-limited scenarios
 
-## Generated: 2025-12-15T02:39:16.069Z
+## Generated: 2025-12-15T18:48:03.421Z

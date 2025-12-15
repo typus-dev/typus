@@ -50,7 +50,32 @@ if [ "$(basename "$INSTALL_DIR")" = "setup" ]; then
 fi
 
 BACKUP_DIR="$INSTALL_DIR/storage/backups"
-RELEASE_DIR="/server/sites/typus-lite/release-system/releases"
+TYPUS_ROOT_DIR=""
+
+# Try to auto-detect "host root" (where release-system/releases exists).
+# This supports layouts like:
+#   /server/sites/typus/test-installations/<domain>
+#   /server/sites/typus/<domain>
+detect_typus_root() {
+    local dir="$INSTALL_DIR"
+    while [ -n "$dir" ] && [ "$dir" != "/" ]; do
+        if [ -d "$dir/release-system/releases" ]; then
+            echo "$dir"
+            return 0
+        fi
+        dir="$(dirname "$dir")"
+    done
+    return 1
+}
+
+TYPUS_ROOT_DIR="$(detect_typus_root 2>/dev/null || true)"
+
+DEFAULT_RELEASE_DIR=""
+if [ -n "$TYPUS_ROOT_DIR" ] && [ -d "$TYPUS_ROOT_DIR/release-system/releases" ]; then
+    DEFAULT_RELEASE_DIR="$TYPUS_ROOT_DIR/release-system/releases"
+fi
+
+RELEASE_DIR="${TYPUS_RELEASE_DIR:-$DEFAULT_RELEASE_DIR}"
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 
 # Read database credentials from .env
@@ -82,11 +107,17 @@ echo -e "${CYAN}Install Dir:${NC} $INSTALL_DIR"
 echo ""
 
 # Check if release exists
+if [ -z "$RELEASE_DIR" ]; then
+    echo -e "${RED}❌ RELEASE_DIR not detected.${NC}"
+    echo -e "${YELLOW}Set TYPUS_RELEASE_DIR=/path/to/releases or run from a host layout that contains release-system/releases.${NC}"
+    exit 1
+fi
+
 LATEST_RELEASE=$(ls -t "$RELEASE_DIR"/lite-complete-*.tar.gz 2>/dev/null | head -1)
 if [ -z "$LATEST_RELEASE" ]; then
     echo -e "${YELLOW}No release found. Building fresh release...${NC}"
-    if [ -f "/server/sites/typus-lite/test-installations/1-make-release.sh" ]; then
-        cd /server/sites/typus-lite/test-installations
+    if [ -n "$TYPUS_ROOT_DIR" ] && [ -f "$TYPUS_ROOT_DIR/test-installations/1-make-release.sh" ]; then
+        cd "$TYPUS_ROOT_DIR/test-installations"
         ./1-make-release.sh
         LATEST_RELEASE=$(ls -t "$RELEASE_DIR"/lite-complete-*.tar.gz 2>/dev/null | head -1)
     else

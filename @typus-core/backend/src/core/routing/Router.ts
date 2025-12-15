@@ -10,6 +10,7 @@ import smlRoutes from '../../sml/routes/sml.routes.js';
 
 export class Router {
   private logger: ILogger;
+  private manifestCache: any | null = null;
 
   constructor(private app: ExpressApp) {
     
@@ -36,7 +37,21 @@ export class Router {
     });
     
     this.app.get(`${env.API_PATH}/health`, (req, res) => {
-      res.status(200).json({ status: 'ok', uptime: process.uptime() });
+      const manifest = this.getManifest();
+
+      if (manifest?.version) res.setHeader('X-Typus-Version', String(manifest.version));
+      if (manifest?.build_number) res.setHeader('X-Typus-Build-Number', String(manifest.build_number));
+      if (manifest?.build_date) res.setHeader('X-Typus-Build-Date', String(manifest.build_date));
+      if (manifest?.release_id) res.setHeader('X-Typus-Release-Id', String(manifest.release_id));
+
+      res.status(200).json({
+        status: 'ok',
+        uptime: process.uptime(),
+        version: manifest?.version,
+        build_number: manifest?.build_number,
+        build_date: manifest?.build_date,
+        release_id: manifest?.release_id
+      });
     });
 
     // SML (System Management Layer) API
@@ -100,5 +115,24 @@ export class Router {
       this.logger.warn('[Router] Failed to resolve module path', { error });
       return null;
     }
+  }
+
+  private getManifest(): any {
+    if (this.manifestCache) {
+      return this.manifestCache;
+    }
+
+    try {
+      const manifestPath = '/app/typus-manifest.json';
+      if (fs.existsSync(manifestPath)) {
+        const content = fs.readFileSync(manifestPath, 'utf-8');
+        this.manifestCache = JSON.parse(content);
+        return this.manifestCache;
+      }
+    } catch (error) {
+      this.logger.warn('[Router] Failed to read typus-manifest.json', { error });
+    }
+
+    return {};
   }
 }

@@ -14,18 +14,43 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     restart: unless-stopped
-    env_file:
-      - .env
     ports:
       - "${LOCALHOST_PORT:-3000}:80"
     networks:
       - typus-local
     environment:
+      # Localhost "zero-config" defaults (no .env required)
       - NODE_ENV=development
+      - SERVER_PORT=3001
       - PORT=3001
+      - HOST=0.0.0.0
+      - API_PATH=/api
       - APP_DOMAIN=localhost
       - APP_URL=http://localhost:${LOCALHOST_PORT:-3000}
-      # DATABASE_URL comes from .env (supports MySQL or SQLite)
+      - BACKEND_URL=http://localhost:${LOCALHOST_PORT:-3000}
+      - FRONTEND_URL=http://localhost:${LOCALHOST_PORT:-3000}
+
+      # Required secrets/tokens (LOCAL ONLY; do not use for production)
+      - INTERNAL_API_TOKEN=local_dev_internal_token_change_me
+      - APP_SECRET=local_dev_app_secret_change_me
+      - JWT_SECRET=local_dev_jwt_secret_change_me
+      - JWT_EXPIRE=2592000
+      - REFRESH_TOKEN_EXPIRE=2592000
+      - SESSION_SECRET=local_dev_session_secret_change_me
+      - CONVERSATION_ENCRYPTION_SALT=local_dev_conversation_salt_change_me
+
+      # Default admin (LOCAL ONLY)
+      - ADMIN_EMAIL=admin@localhost
+      - ADMIN_PASSWORD=admin12345
+
+      # Embedded MySQL (service "mysql" below)
+      - DB_PROVIDER=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=typus_db
+      - DB_USER=${DB_USER:-typus}
+      - DB_PASSWORD=${DB_PASSWORD:-typus_password}
+
       - REDIS_ENABLED=false
       - DISPATCHER_ENABLED=false
       - PROJECT_PATH=/app
