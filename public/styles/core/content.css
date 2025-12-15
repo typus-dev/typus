@@ -1,0 +1,132 @@
+/* ================================================================
+   CONTENT STYLES - For CMS content display (used in both SPA & cache)
+   ================================================================ */
+
+/* Base content container */
+.content-container {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+}
+
+/* Heading blocks - semantic classes with theme integration */
+.heading {
+  margin: 1.5rem 0 1rem 0;
+}
+
+.heading h1,
+.heading h2,
+.heading h3,
+.heading h4,
+.heading h5,
+.heading h6 {
+  font-size: inherit !important;
+  text-align: inherit !important;
+  color: var(--color-text-primary) !important;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+}
+
+/* Text blocks */
+.text-block {
+  margin-bottom: 1.5rem;
+  color: var(--color-text-primary);
+}
+
+.text-block p {
+  margin-bottom: 1rem;
+  line-height: 1.75;
+}
+
+.text-block a {
+  color: var(--color-accent-text);
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+.text-block a:hover {
+  opacity: 0.8;
+}
+
+.text-block strong {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* Image blocks */
+.image-block {
+  margin: 2rem 0;
+}
+
+.image-block img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* List blocks */
+.list-block {
+  margin: 1.5rem 0;
+}
+
+.list-block ul {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  color: var(--color-text-primary);
+}
+
+.list-block ol {
+  list-style-type: decimal;
+  margin-left: 1.5rem;
+  color: var(--color-text-primary);
+}
+
+.list-block li {
+  margin-bottom: 0.5rem;
+  line-height: 1.75;
+}
+
+/* Predefined heading sizes (optional - for editor presets) */
+.heading-xl h1,
+.heading-xl h2,
+.heading-xl h3 {
+  font-size: 2.25rem !important; /* 36px */
+}
+
+.heading-lg h1,
+.heading-lg h2,
+.heading-lg h3 {
+  font-size: 1.875rem !important; /* 30px */
+}
+
+.heading-md h1,
+.heading-md h2,
+.heading-md h3 {
+  font-size: 1.5rem !important; /* 24px */
+}
+
+.heading-sm h1,
+.heading-sm h2,
+.heading-sm h3 {
+  font-size: 1.25rem !important; /* 20px */
+}
+
+/* Content width variants */
+.content-width-full {
+  width: 100%;
+}
+
+.content-width-wide {
+  width: 80%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.content-width-narrow {
+  width: 65ch;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}

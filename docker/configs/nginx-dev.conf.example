@@ -1,0 +1,254 @@
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    client_max_body_size 100m;
+    client_body_timeout 300s;
+
+    # --- Logging Configuration ---
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" cache_status="$sent_http_x_cache_status"';
+
+    # Map to get real client IP (CF-Connecting-IP or X-Forwarded-For or remote_addr)
+    map $http_cf_connecting_ip $client_real_ip {
+        ""      $http_x_forwarded_for;  # If no CF header, try X-Forwarded-For
+        default $http_cf_connecting_ip;  # Cloudflare real IP (priority)
+    }
+
+    # Fallback if both CF and X-Forwarded-For are empty
+    map $client_real_ip $final_client_ip {
+        ""      $remote_addr;
+        default $client_real_ip;
+    }
+
+    # Web Analytics JSON log format
+    log_format web_analytics escape=json
+    '{'
+        '"timestamp":"$time_iso8601",'
+        '"ip":"$final_client_ip",'
+        '"method":"$request_method",'
+        '"uri":"$request_uri",'
+        '"query":"$query_string",'
+        '"status":$status,'
+        '"request_time":$request_time,'
+        '"referer":"$http_referer",'
+        '"user_agent":"$http_user_agent",'
+        '"scheme":"$scheme",'
+        '"host":"$host"'
+    '}';
+
+    access_log /var/log/nginx/access.log main;
+    access_log /var/log/nginx/web-analytics.log web_analytics;
+    error_log /var/log/nginx/error.log warn;
+
+    # --- General & Gzip Settings ---
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml text/javascript application/json application/javascript application/xml+rss application/atom+xml image/svg+xml;
+
+    # --- Rate Limiting Configuration ---
+    # Map to allow internal requests to bypass rate limiting
+    map $http_x_internal_request_secret $limit_key {
+        ""  $binary_remote_addr;  # Default: rate limit by IP
+        default $binary_remote_addr;
+    }
+    limit_req_zone $limit_key zone=api_limit:10m rate=10r/s;
+    limit_req_zone $limit_key zone=storage_limit:10m rate=20r/s;
+
+    # --- Main Server Block ---
+    server {
+        listen 80;
+        server_name _;
+
+        # HTML cache root (takes priority)
+        root CHANGE_ME_PROJECT_PATH/storage/html-cache;
+
+        # --- Security Headers ---
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+        # --- Redirects Configuration ---
+        include /etc/nginx/conf.d/redirects.conf;
+
+        # --- Location Blocks (Order is important) ---
+
+        # Hidden files protection (exclude .vite and .pnpm for Vite dev server)
+        location ~ /\.(?!vite|pnpm|well-known) { deny all; access_log off; log_not_found off; }
+
+        # Health check endpoint
+        location /health {
+            access_log off;
+            return 200 "nginx healthy\n";
+            add_header Content-Type text/plain;
+        }
+
+        # Nginx status (internal only)
+        location /nginx-status {
+            stub_status on;
+            access_log off;
+            allow 127.0.0.1;
+            allow 172.16.0.0/12;
+            deny all;
+        }
+
+        # Storage API - proxy /storage/... to /api/storage/...
+        location ^~ /storage/ {
+            limit_req zone=storage_limit burst=30 nodelay;
+
+            add_header X-Cache-Status "STORAGE-API";
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+
+            proxy_pass http://127.0.0.1:3001/api/storage/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Authorization $http_authorization;
+
+            # Important for file downloads
+            proxy_buffering off;
+            proxy_request_buffering off;
+        }
+
+        # WebSocket connections for real-time notifications
+        location /ws {
+            add_header X-Cache-Status "WEBSOCKET-BYPASS";
+            proxy_pass http://127.0.0.1:3001;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 86400;
+            proxy_send_timeout 86400;
+        }
+
+        # HMR (Hot Module Replacement) WebSocket for Vite
+        location /hmr/ {
+            add_header X-Cache-Status "HMR-BYPASS";
+            proxy_pass http://127.0.0.1:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 86400;
+            proxy_send_timeout 86400;
+        }
+
+        # Vite dev server special paths (match all node_modules, not just .vite)
+        location ~* ^/(src/|node_modules/|@vite/|@fs/|@id/|__vue-router/) {
+            add_header X-Cache-Status "VITE-BYPASS";
+            proxy_pass http://127.0.0.1:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Static assets - try cache first, fallback to Vite
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|avif)$ {
+            try_files $uri @vite_assets;
+            add_header X-Cache-Status "ASSET-CACHE-HIT";
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+
+        location @vite_assets {
+            proxy_pass http://127.0.0.1:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            add_header X-Cache-Status "VITE-ASSET";
+        }
+
+        # Backend API
+        location /api/ {
+            limit_req zone=api_limit burst=20 nodelay;
+
+            add_header X-Cache-Status "API-BYPASS";
+            proxy_pass http://127.0.0.1:3001;
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+            add_header Pragma "no-cache";
+            add_header Expires "0";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $final_client_ip;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Static files from public directory
+        location ~* ^/(robots\.txt|favicon\.ico)$ {
+            root /app/public;
+            try_files $uri @fallback;
+            add_header X-Cache-Status "STATIC-PUBLIC";
+            add_header Cache-Control "public, max-age=86400";
+            expires 1d;
+        }
+
+        # Sitemap - try cached file first, then generate
+        location = /sitemap.xml {
+            root /app/storage/cache/html;
+            try_files $uri @sitemap_fallback;
+            add_header X-Cache-Status "SITEMAP-CACHE-HIT";
+            add_header Cache-Control "public, max-age=3600";
+            add_header Content-Type "application/xml; charset=utf-8";
+            expires 1h;
+        }
+
+        # Sitemap generation fallback
+        location @sitemap_fallback {
+            add_header X-Cache-Status "SITEMAP-GENERATION";
+            proxy_pass http://127.0.0.1:3001;
+            proxy_set_header X-Original-URI $request_uri;
+            proxy_set_header X-Sitemap-Request "true";
+            add_header Cache-Control "public, max-age=3600";
+            add_header Content-Type "application/xml; charset=utf-8";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            expires 1h;
+        }
+
+        # Frontend - try HTML cache first, fallback to Vite
+        location / {
+            try_files $uri $uri.html $uri/index.html @fallback;
+            add_header X-Cache-Status "HTML-CACHE-HIT";
+            add_header Cache-Control "public, max-age=3600";
+            add_header Vary "Accept-Encoding";
+            expires 1h;
+        }
+
+        # Fallback location (for Vite)
+        location @fallback {
+            proxy_pass http://127.0.0.1:3000;
+            add_header X-Cache-Status "FALLBACK";
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+        }
+    }
+}

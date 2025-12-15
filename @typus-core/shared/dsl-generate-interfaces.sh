@@ -1,0 +1,1 @@
+sudo -u appuser pnpm run generate:interfaces

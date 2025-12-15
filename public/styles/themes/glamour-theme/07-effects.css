@@ -1,0 +1,265 @@
+/*
+ * 07-EFFECTS - Universal visual effects controlled by CSS variable flags
+ *
+ * Effects are enabled/disabled via --effect-* variables in 00-tokens.css.
+ * This file is universal - same for all themes. Only tokens differ.
+ */
+
+/* ==========================================================================
+   KEYFRAME ANIMATIONS
+   ========================================================================== */
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes mesh-move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes theme-button-gradient {
+  0% {
+    transform: translate(-90%, 85%) rotate(-15deg);
+    opacity: 0.6;
+  }
+  55% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate(110%, -85%) rotate(-15deg);
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   NEON BUTTON GLOW
+   Controlled by: --effect-button-glow
+   ========================================================================== */
+.theme-components-button-variants-primary {
+  box-shadow:
+    0 0 calc(var(--effect-button-glow, 0) * 10px) var(--neon-primary, rgba(96, 165, 250, 0.5)),
+    0 0 calc(var(--effect-button-glow, 0) * 20px) var(--neon-primary, rgba(96, 165, 250, 0.3));
+  text-shadow: 0 0 calc(var(--effect-button-glow, 0) * 5px) currentColor;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.theme-components-button-variants-primary:hover {
+  box-shadow:
+    0 0 calc(var(--effect-button-glow, 0) * 15px) var(--neon-primary, rgba(96, 165, 250, 0.7)),
+    0 0 calc(var(--effect-button-glow, 0) * 30px) var(--neon-primary, rgba(96, 165, 250, 0.5)),
+    0 0 calc(var(--effect-button-glow, 0) * 45px) var(--neon-primary, rgba(96, 165, 250, 0.3));
+  transform: translateY(calc(var(--effect-button-glow, 0) * -2px));
+}
+
+/* ==========================================================================
+   HEADING GLOW
+   Controlled by: --effect-heading-glow
+   ========================================================================== */
+h1, h2 {
+  text-shadow:
+    0 0 calc(var(--effect-heading-glow, 0) * 10px) var(--neon-primary, rgba(96, 165, 250, 0.4)),
+    0 0 calc(var(--effect-heading-glow, 0) * 20px) var(--neon-primary, rgba(96, 165, 250, 0.2));
+}
+
+h3 {
+  text-shadow:
+    0 0 calc(var(--effect-heading-glow, 0) * 8px) var(--neon-secondary, rgba(167, 139, 250, 0.4));
+}
+
+/* ==========================================================================
+   INPUT FOCUS GLOW
+   Controlled by: --effect-input-glow
+   ========================================================================== */
+.theme-components-input-base:focus,
+input:focus,
+textarea:focus {
+  box-shadow:
+    0 0 0 calc(var(--effect-input-glow, 0) * 2px) var(--neon-primary, rgba(96, 165, 250, 0.3)),
+    0 0 calc(var(--effect-input-glow, 0) * 15px) var(--neon-primary, rgba(96, 165, 250, 0.4));
+}
+
+/* ==========================================================================
+   CARD EFFECTS (Shimmer + 3D Tilt)
+   Controlled by: --effect-shimmer, --effect-tilt
+   ========================================================================== */
+.theme-components-card-base {
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s ease;
+}
+
+/* Shimmer effect - animation always runs, opacity controls visibility */
+.theme-components-card-base::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  animation: shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+  opacity: var(--effect-shimmer, 0);
+}
+
+.theme-components-card-base:hover {
+  transform:
+    perspective(1000px)
+    rotateX(calc(var(--effect-tilt, 0) * -2deg))
+    rotateY(calc(var(--effect-tilt, 0) * 3deg))
+    translateY(calc(var(--effect-tilt, 0) * -5px));
+  box-shadow:
+    calc(var(--effect-tilt, 0) * -8px) calc(var(--effect-tilt, 0) * 8px) calc(var(--effect-tilt, 0) * 25px) rgba(0, 0, 0, 0.4),
+    0 0 calc(var(--effect-tilt, 0) * 20px) var(--neon-primary, rgba(96, 165, 250, 0.15));
+}
+
+/* ==========================================================================
+   LINK HOVER GLOW
+   Controlled by: --effect-link-glow
+   ========================================================================== */
+a {
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  text-shadow: 0 0 calc(var(--effect-link-glow, 0) * 10px) var(--neon-primary, rgba(96, 165, 250, 0.6));
+}
+
+/* ==========================================================================
+   MAGNETIC BUTTONS
+   Controlled by: --effect-magnetic
+   ========================================================================== */
+button,
+.btn {
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+button:hover,
+.btn:hover {
+  transform: scale(calc(1 + var(--effect-magnetic, 0) * 0.03));
+}
+
+button:active,
+.btn:active {
+  transform: scale(calc(1 - var(--effect-magnetic, 0) * 0.03));
+}
+
+/* ==========================================================================
+   SELECT DROPDOWN GLOW
+   Controlled by: --effect-dropdown-glass
+   ========================================================================== */
+.theme-components-select-dropdown-base {
+  backdrop-filter: blur(calc(var(--effect-dropdown-glass, 0) * 20px));
+  border: 1px solid rgba(96, 165, 250, calc(var(--effect-dropdown-glass, 0) * 0.3));
+  box-shadow:
+    0 10px calc(var(--effect-dropdown-glass, 0) * 40px) rgba(0, 0, 0, 0.5),
+    0 0 calc(var(--effect-dropdown-glass, 0) * 20px) var(--neon-primary, rgba(96, 165, 250, 0.2));
+}
+
+/* ==========================================================================
+   MODAL FROSTED GLASS
+   Controlled by: --effect-modal-glass
+   ========================================================================== */
+.theme-components-modal-overlay {
+  backdrop-filter: blur(calc(var(--effect-modal-glass, 0) * 8px)) saturate(calc(100% + var(--effect-modal-glass, 0) * 50%));
+}
+
+.theme-components-modal-container {
+  backdrop-filter: blur(calc(var(--effect-modal-glass, 0) * 30px)) saturate(calc(100% + var(--effect-modal-glass, 0) * 80%));
+  box-shadow:
+    0 25px calc(var(--effect-modal-glass, 0) * 50px) rgba(0, 0, 0, 0.5),
+    0 0 calc(var(--effect-modal-glass, 0) * 40px) var(--neon-primary, rgba(96, 165, 250, 0.15));
+}
+
+/* ==========================================================================
+   TABLE ROW HOVER GLOW
+   Controlled by: --effect-table-glow
+   ========================================================================== */
+.theme-components-table-body-row:hover {
+  background: var(--neon-primary, rgba(96, 165, 250, 0.1));
+  background-color: transparent;
+  box-shadow:
+    inset 0 0 calc(var(--effect-table-glow, 0) * 20px) var(--neon-primary, rgba(96, 165, 250, 0.1)),
+    inset 0 0 0 1000px rgba(96, 165, 250, calc(var(--effect-table-glow, 0) * 0.1));
+}
+
+/* ==========================================================================
+   PROGRESS BAR GRADIENT
+   Controlled by: --effect-progress-glow
+   ========================================================================== */
+.theme-components-progressbar-bar {
+  box-shadow: 0 0 calc(var(--effect-progress-glow, 0) * 10px) var(--neon-primary, rgba(96, 165, 250, 0.5));
+}
+
+/* ==========================================================================
+   BADGE GLOW
+   Controlled by: --effect-glow-badges
+   ========================================================================== */
+.theme-components-badge-variants-primary {
+  box-shadow: 0 0 calc(var(--effect-glow-badges, 0) * 10px) var(--neon-primary, rgba(96, 165, 250, 0.4));
+}
+
+.theme-components-badge-variants-success {
+  box-shadow: 0 0 calc(var(--effect-glow-badges, 0) * 10px) var(--color-bg-success, rgba(52, 211, 153, 0.4));
+}
+
+.theme-components-badge-variants-error {
+  box-shadow: 0 0 calc(var(--effect-glow-badges, 0) * 10px) var(--color-bg-error, rgba(248, 113, 113, 0.4));
+}
+
+/* ==========================================================================
+   CHECKBOX/SWITCH GLOW
+   Controlled by: --effect-checkbox-glow
+   ========================================================================== */
+.theme-components-checkbox-background-checked,
+.theme-components-switch-checked {
+  box-shadow:
+    0 0 calc(var(--effect-checkbox-glow, 0) * 10px) var(--neon-primary, rgba(96, 165, 250, 0.5)),
+    0 0 calc(var(--effect-checkbox-glow, 0) * 20px) var(--neon-primary, rgba(96, 165, 250, 0.3));
+}
+
+/* ==========================================================================
+   NEON SCROLLBAR
+   Controlled by: --effect-neon-scrollbar
+   Scoped to themed elements only
+   ========================================================================== */
+[data-theme] ::-webkit-scrollbar,
+[data-theme]::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme] ::-webkit-scrollbar-track,
+[data-theme]::-webkit-scrollbar-track {
+  background: var(--color-bg-primary, rgba(24, 20, 16, 0.5));
+  border-radius: 4px;
+}
+
+[data-theme] ::-webkit-scrollbar-thumb,
+[data-theme]::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(96, 165, 250, calc(var(--effect-neon-scrollbar, 0) * 0.4 + 0.2)),
+    rgba(167, 139, 250, calc(var(--effect-neon-scrollbar, 0) * 0.4 + 0.2))
+  );
+  border-radius: 4px;
+  box-shadow: 0 0 calc(var(--effect-neon-scrollbar, 0) * 5px) var(--neon-primary, rgba(96, 165, 250, 0.3));
+}
+
+[data-theme] ::-webkit-scrollbar-thumb:hover,
+[data-theme]::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(96, 165, 250, calc(var(--effect-neon-scrollbar, 0) * 0.4 + 0.4)),
+    rgba(167, 139, 250, calc(var(--effect-neon-scrollbar, 0) * 0.4 + 0.4))
+  );
+}

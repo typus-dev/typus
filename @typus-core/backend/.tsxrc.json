@@ -1,0 +1,23 @@
+{
+  "esbuild": {
+    "target": "es2022",
+    "format": "esm",
+    "tsconfigRaw": {
+      "compilerOptions": {
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "useDefineForClassFields": false,
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "baseUrl": ".",
+        "paths": {
+          "@/*": ["src/*"],
+          "@typus-core/backend/*": ["./src/*"],
+          "@typus-core/shared/*": ["../shared/*"],
+          "@custom/*": ["../../custom/*"]
+        }
+      }
+    }
+  }
+}

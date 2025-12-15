@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "1.0.0",
+  "description": "Theme validation schema - single source of truth for theme structure",
+
+  "files": {
+    "required": [
+      "00-tokens.css",
+      "01-base.css",
+      "02-typography.css",
+      "03-content.css",
+      "04-colors.css",
+      "05-layout.css",
+      "06-components.css",
+      "07-mixins.css",
+      "99-overrides.css"
+    ],
+    "optional": [
+      "97-admin.css",
+      "98-landing.css",
+      "manifest.json",
+      "README.md"
+    ]
+  },
+
+  "classes": {
+    "critical": [
+      "theme-colors-text-primary",
+      "theme-colors-text-secondary",
+      "theme-colors-text-muted",
+      "theme-colors-text-inverse",
+      "theme-colors-background-primary",
+      "theme-colors-background-secondary",
+      "theme-colors-background-tertiary",
+      "theme-colors-background-hover",
+      "theme-colors-border-primary",
+      "theme-colors-border-secondary",
+      "theme-components-button-base",
+      "theme-components-button-variants-primary",
+      "theme-components-button-variants-secondary",
+      "theme-components-button-variants-ghost",
+      "theme-components-button-sizes-sm",
+      "theme-components-button-sizes-md",
+      "theme-components-button-sizes-lg",
+      "theme-components-input-base",
+      "theme-components-input-variants-default",
+      "theme-components-card-base",
+      "theme-components-card-header",
+      "theme-components-card-body",
+      "theme-layout-container-base",
+      "theme-layout-flex-center",
+      "theme-layout-flex-between",
+      "theme-layout-grid-base"
+    ],
+    "standard": [
+      "theme-components-badge-base",
+      "theme-components-badge-variants-default",
+      "theme-components-badge-variants-primary",
+      "theme-components-modal-container",
+      "theme-components-modal-overlay",
+      "theme-components-modal-content",
+      "theme-components-table-base",
+      "theme-components-table-header",
+      "theme-components-table-row",
+      "theme-components-table-cell",
+      "theme-components-dropdown-container",
+      "theme-components-dropdown-item",
+      "theme-components-tabs-container",
+      "theme-components-tabs-tab",
+      "theme-typography-content-h1",
+      "theme-typography-content-h2",
+      "theme-typography-content-h3",
+      "theme-typography-content-p",
+      "theme-typography-content-a",
+      "theme-typography-content-ul",
+      "theme-typography-content-ol",
+      "theme-typography-content-code",
+      "theme-typography-content-blockquote",
+      "theme-mixins-transition-all",
+      "theme-mixins-transition-colors",
+      "theme-mixins-interactive"
+    ],
+    "optional": [
+      "theme-print-color-background",
+      "theme-print-color-text",
+      "theme-logo-background",
+      "theme-logo-text",
+      "theme-colors-background-accent",
+      "theme-colors-background-success",
+      "theme-colors-background-warning",
+      "theme-colors-background-error"
+    ]
+  },
+
+  "variables": {
+    "required": [
+      "--color-text-primary",
+      "--color-text-secondary",
+      "--color-bg-primary",
+      "--color-bg-secondary",
+      "--color-border-primary",
+      "--color-accent-primary"
+    ],
+    "optional": [
+      "--color-success",
+      "--color-warning",
+      "--color-error",
+      "--spacing-xs",
+      "--spacing-sm",
+      "--spacing-md",
+      "--spacing-lg",
+      "--spacing-xl",
+      "--radius-sm",
+      "--radius-md",
+      "--radius-lg",
+      "--shadow-sm",
+      "--shadow-md",
+      "--shadow-lg"
+    ]
+  },
+
+  "validation": {
+    "levels": {
+      "critical": {
+        "description": "Missing = ERROR, validation fails",
+        "exitCode": 1
+      },
+      "standard": {
+        "description": "Missing = WARNING, validation passes",
+        "exitCode": 0
+      },
+      "optional": {
+        "description": "Missing = INFO (verbose mode only)",
+        "exitCode": 0
+      }
+    }
+  }
+}

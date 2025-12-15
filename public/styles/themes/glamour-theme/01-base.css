@@ -1,0 +1,79 @@
+/*
+ * ⚠️  DO NOT MODIFY CLASS STRUCTURE
+ * 
+ * This is a REFERENCE theme used as template for theme generation.
+ * Changing class names or removing classes will break theme generator.
+ * 
+ * You MAY modify:
+ * - Default values (padding, colors, sizes)
+ * - Add new classes
+ * 
+ * You MUST NOT:
+ * - Rename existing classes
+ * - Remove existing classes
+ * - Change selector structure
+ */
+
+/* ==========================================================================
+   01-BASE - Base tokens
+   ========================================================================== */
+
+[data-theme="glamour-theme"] .theme-base-radius {
+  border-radius: var(--radius-lg);
+}
+
+[data-theme="glamour-theme"] .theme-base-shadow {
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="glamour-theme"] .theme-base-border {
+  border: 1px solid var(--color-border-primary);
+}
+
+[data-theme="glamour-theme"] .theme-base-borderNone {
+  border: none;
+}
+
+[data-theme="glamour-theme"] .theme-base-spacing-sm {
+  margin: var(--spacing-sm);
+}
+
+[data-theme="glamour-theme"] .theme-base-spacing-md {
+  margin: var(--spacing-md);
+}
+
+[data-theme="glamour-theme"] .theme-base-animation-duration {
+  transition-duration: 300ms;
+}
+
+[data-theme="glamour-theme"] .theme-base-animation-easing {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="glamour-theme"] .theme-base-zIndex {
+  z-index: 10;
+}
+
+[data-theme="glamour-theme"] .theme-border {
+  border: 1px solid var(--color-border-primary);
+}
+
+/* ========================================================================== 
+   PAGE BACKGROUND
+   ========================================================================== */
+
+html[data-theme="glamour-theme"] body {
+  background: var(--app-background-fill, var(--color-bg-primary));
+  color: var(--color-text-primary);
+}
+
+/* ========================================================================== 
+/* ==========================================================================
+   GRID BACKGROUND - DISABLED FOR GLAMOUR
+   ========================================================================== */
+
+[data-theme="glamour-theme"] body::before,
+html[data-theme="glamour-theme"] body::before {
+  display: none;
+}
+}

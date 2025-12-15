@@ -1,0 +1,19 @@
+{
+  "name": "@typus/seed",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Database-agnostic seed data for Typus CMS",
+  "scripts": {
+    "seed": "tsx index.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "bcrypt": "^5.1.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

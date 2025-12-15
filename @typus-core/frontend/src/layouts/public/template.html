@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="{{language}}" data-theme="{{theme}}" data-reference-theme="{{theme}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon/favicon.svg" type="image/png">
+  <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="/favicon/manifest.webmanifest">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600&family=JetBrains+Mono&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <title>{{title}}{{#if siteName}} | {{siteName}}{{/if}}</title>
+  {{#if metaDescription}}<meta name="description" content="{{metaDescription}}">{{/if}}
+  {{#if metaKeywords}}<meta name="keywords" content="{{metaKeywords}}">{{/if}}
+  {{#if canonicalUrl}}<link rel="canonical" href="{{canonicalUrl}}">{{/if}}
+  {{#if robotsMeta}}<meta name="robots" content="{{robotsMeta}}">{{/if}}
+
+  <meta property="og:title" content="{{#if ogTitle}}{{ogTitle}}{{else}}{{title}}{{/if}}">
+  {{#if ogDescription}}<meta property="og:description" content="{{ogDescription}}">{{/if}}
+  {{#if ogImage}}<meta property="og:image" content="{{ogImage}}">{{/if}}
+  {{#if ogType}}<meta property="og:type" content="{{ogType}}">{{/if}}
+  {{#if canonicalUrl}}<meta property="og:url" content="{{canonicalUrl}}">{{/if}}
+
+  <script>
+    (function() {
+      try {
+        var storedTheme = localStorage.getItem('app-theme');
+        if (storedTheme) {
+          document.documentElement.setAttribute('data-theme', storedTheme);
+          document.documentElement.setAttribute('data-reference-theme', storedTheme);
+        } else {
+          document.documentElement.setAttribute('data-theme', '{{defaultTheme}}');
+          document.documentElement.setAttribute('data-reference-theme', '{{defaultTheme}}');
+        }
+      } catch (err) {
+        document.documentElement.setAttribute('data-theme', '{{defaultTheme}}');
+        document.documentElement.setAttribute('data-reference-theme', '{{defaultTheme}}');
+      }
+    })();
+  </script>
+
+  <!-- Theme CSS - Dynamically generated -->
+  {{{themeLinks}}}
+
+
+  {{#if customCSS}}
+  <style>
+    {{{customCSS}}}
+  </style>
+  {{/if}}
+
+  {{#if structuredData}}
+  <script type="application/ld+json">
+    {{{structuredData}}}
+  </script>
+  {{/if}}
+
+  {{#if analyticsId}}
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{analyticsId}}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '{{analyticsId}}');
+  </script>
+  {{/if}}
+</head>
+<body class="theme-colors-background-primary theme-colors-text-primary {{bodyClass}}">
+  <div id="cache-snapshot" data-v-app="">
+    <div class="app font-jetbrains min-h-screen">
+      <div class="flex flex-col min-h-screen">
+        {{> header}}
+
+        <main class="flex-1 w-full">
+          <div class="w-full max-w-7xl mx-auto px-6 py-8">
+            {{{content}}}
+          </div>
+        </main>
+
+        {{> footer}}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const THEME_KEY = 'app-theme';
+      const themes = {{{json availableThemes}}};
+      const defaultTheme = '{{defaultTheme}}';
+
+      console.log('[ThemeScript] Script loaded, current data-theme:', document.documentElement.getAttribute('data-theme'));
+
+      function applyTheme(theme) {
+        console.log('[ThemeScript] applyTheme called with:', theme);
+        if (!themes.includes(theme)) {
+          console.warn('[ThemeScript] Theme not in allowed list:', theme, 'allowed:', themes);
+          return;
+        }
+        console.log('[ThemeScript] Applying theme:', theme);
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-reference-theme', theme);
+        try {
+          localStorage.setItem(THEME_KEY, theme);
+        } catch (err) {
+          console.warn('[ThemeScript] Unable to persist theme', err);
+        }
+      }
+
+      function initThemeFromDom() {
+        const dataTheme = document.documentElement.getAttribute('data-theme');
+        console.log('[ThemeScript] initThemeFromDom, current data-theme:', dataTheme);
+        if (!dataTheme || !themes.includes(dataTheme)) {
+          console.log('[ThemeScript] Invalid theme, applying default:', defaultTheme);
+          applyTheme(defaultTheme);
+        } else {
+          console.log('[ThemeScript] Theme valid, keeping:', dataTheme);
+          document.documentElement.setAttribute('data-reference-theme', dataTheme);
+        }
+      }
+
+      function setupSwitcher() {
+        const trigger = document.querySelector('[data-theme-switcher-trigger]');
+        const menu = document.querySelector('[data-theme-switcher-menu]');
+        if (!trigger || !menu) return;
+
+        trigger.addEventListener('click', (event) => {
+          event.preventDefault();
+          const isOpen = menu.classList.toggle('hidden');
+          trigger.setAttribute('aria-expanded', (!isOpen).toString());
+        });
+
+        document.addEventListener('click', (event) => {
+          if (!menu) return;
+          const target = event.target;
+          if (menu.contains(target) || trigger.contains(target)) return;
+          menu.classList.add('hidden');
+          trigger.setAttribute('aria-expanded', 'false');
+        });
+
+        menu.querySelectorAll('[data-theme-option]').forEach((button) => {
+          button.addEventListener('click', () => {
+            const theme = button.getAttribute('data-theme-option');
+            applyTheme(theme);
+            menu.classList.add('hidden');
+            trigger.setAttribute('aria-expanded', 'false');
+          });
+        });
+      }
+
+      const boot = () => {
+        initThemeFromDom();
+        setupSwitcher();
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+      } else {
+        boot();
+      }
+    })();
+  </script>
+
+  {{#if includeJS}}
+  <script src="/js/interactions.js" defer></script>
+  {{/if}}
+</body>
+</html>

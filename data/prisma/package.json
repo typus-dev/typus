@@ -1,0 +1,20 @@
+{
+  "name": "@data/prisma",
+  "version": "1.0.0",
+  "scripts": {
+    "prisma:generate": "npx prisma generate --schema=schemas/schema.prisma"
+  },
+  "prisma": {
+    "seed": "tsx ../../setup/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "6.8.2",
+    "bcryptjs": "^3.0.2"
+  },
+  "devDependencies": {
+    "prisma": "6.8.2",
+    "prisma-case-format": "^2.2.1",
+    "@types/bcryptjs": "^2.4.6",
+    "tsx": "^4.7.0"
+  }
+}

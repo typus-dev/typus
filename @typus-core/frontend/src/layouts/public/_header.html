@@ -1,0 +1,29 @@
+<header class="theme-layout-shell-header">
+  <div class="container">
+    <div class="theme-layout-flex-between theme-layout-flex-items theme-shell-header-inner">
+      <a href="/" class="theme-shell-brand">
+        <span class="theme-shell-brand-mark">//</span>
+        <span class="theme-shell-brand-name">{{siteName}}</span>
+      </a>
+      <nav class="theme-shell-nav" aria-label="Primary">
+        {{#each navItems}}
+        <a
+          href="{{this.href}}"
+          class="theme-shell-nav-link {{#if this.active}}is-active{{/if}}"
+          {{#if this.active}}aria-current="page"{{/if}}
+        >
+          {{this.label}}
+        </a>
+        {{/each}}
+      </nav>
+      <div class="theme-shell-actions">
+        <a
+          href="{{ctaUrl}}"
+          class="theme-mixins-interactive theme-components-button-base theme-components-button-minWidth theme-components-button-variants-primary theme-components-button-size-md theme-components-button-spacing-md theme-components-button-radius theme-shell-cta"
+        >
+          <span class="theme-shell-cta-label">{{ctaLabel}}</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

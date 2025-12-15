@@ -1,0 +1,181 @@
+/* 00 - Tokens: CSS custom properties for ocean-theme */
+[data-theme="ocean-theme"] {
+  /* Text colors */
+  --color-text-primary: #c9d1d9;
+  --color-text-secondary: rgba(201, 209, 217, 0.65);
+  --color-text-tertiary: rgba(217, 223, 228, 0.65);
+  --color-text-disabled: rgba(228, 232, 236, 0.65);
+  --color-text-contrast: #000000;
+  --color-text-accent: #c9d1d9;
+  --color-text-on-accent: #0f172a;
+  --color-text-success: #d98cb3;
+  --color-text-on-success: #ffffff;
+  --color-text-warning: #9f8cd9;
+  --color-text-error: #8cccd9;
+  --color-text-info: #8cb2d9;
+
+  /* Background colors */
+  --color-bg-primary: #0d1117;
+  --color-bg-secondary: #161d27;
+  --color-bg-tertiary: #25292e;
+  --color-bg-surface: #161d27;
+  --color-bg-hover: rgba(255, 255, 255, 0.05);
+  --color-bg-disabled: #25292e;
+
+  /* Accent backgrounds */
+  --color-bg-accent: rgba(201, 209, 217, 0.1);
+  --color-bg-accent-solid: #232830;
+  --color-bg-accent-light: rgba(201, 209, 217, 0.1);
+  --color-bg-accent-hover: #ced6dd;
+  --color-bg-accent-glow: rgba(201, 209, 217, 0.15);
+
+  /* Semantic backgrounds */
+  --color-bg-success: #d98cb3;
+  --color-bg-success-light: rgba(217, 140, 179, 0.15);
+  --color-bg-success-hover: #dd98bb;
+  --color-bg-warning: #9f8cd9;
+  --color-bg-warning-light: rgba(159, 140, 217, 0.15);
+  --color-bg-warning-hover: #a998dd;
+  --color-bg-error: #8cccd9;
+  --color-bg-error-light: rgba(140, 204, 217, 0.15);
+  --color-bg-error-hover: #98d1dd;
+  --color-bg-info: #8cb2d9;
+  --color-bg-info-light: rgba(140, 178, 217, 0.15);
+  --color-bg-info-hover: #98badd;
+
+  /* Border colors */
+  --color-border-primary: rgba(201, 209, 217, 0.12);
+  --color-border-secondary: rgba(161, 167, 174, 0.12);
+  --color-border-tertiary: rgba(121, 125, 130, 0.12);
+  --color-border-disabled: rgba(141, 146, 152, 0.12);
+  --color-border-focus: rgba(201, 209, 217, 0.12);
+  --color-border-error: #8cccd9;
+  --color-border-info: #8cb2d9;
+  --color-border-success: #d98cb3;
+  --color-border-warning: #9f8cd9;
+
+  /* Ring colors */
+  --color-ring-focus: rgba(201, 209, 217, 0.5);
+  --color-ring-error: rgba(140, 204, 217, 0.5);
+  --color-ring-offset: #0d1117;
+
+  /* Accent colors */
+  --color-accent-primary: #c9d1d9;
+  --color-accent-secondary: #d4dae1;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Component spacing */
+  --input-padding: 0.5rem 0.75rem;
+  --button-padding: 0.625rem 1rem;
+  --card-padding: 1.5rem;
+
+  /* Border radius */
+  --radius-sm: calc(0.125rem * 0.5);
+  --radius-md: 0.125rem;
+  --radius-lg: calc(0.125rem * 1.5);
+  --radius-xl: calc(0.125rem * 2);
+  --radius-full: 9999px;
+  --radius-button: 0.125rem;
+  --radius-card: 0.5rem;
+
+  /* Shadows */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-accent: 0 4px 20px rgba(201, 209, 217, 0.15);
+
+  /* Typography */
+  --font-family-base: 'Outfit', 'Inter', system-ui, sans-serif;
+  --font-family-heading: 'Outfit', 'Inter', system-ui, sans-serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+  --font-size-base: 1rem;
+  --line-height-base: 1.5;
+  --font-weight-heading: 600;
+
+  /* Component settings */
+  --focus-ring-width: 2px;
+  --card-border-width: 1px;
+  --input-border-width: 1px;
+  --component-outline-text: #f8fafc;
+  --component-outline-bg: #2f3237;
+  --component-outline-border: #9399a0;
+  --component-outline-hover-bg: #42454a;
+  --component-outline-hover-border: #c9d1d9;
+  --component-checkbox-border: #7e848b;
+  --component-checkbox-border-checked: #d1d8df;
+  --component-checkbox-fill: #393c41;
+  --component-checkbox-fill-checked: #c9d1d9;
+  --component-input-background: #2a2e33;
+  --component-input-border: #91979f;
+
+  /* Transitions */
+  --transition-fast: 150 cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Interaction effects */
+  --hover-scale: 1;
+  --hover-brightness: 1;
+  --hover-translate-y: 0;
+
+  /* Gradient controls */
+  --button-primary-fill: #232830;
+  --button-secondary-fill: #232830;
+  --button-gradient-active: 1;
+  --card-surface-fill: linear-gradient(198deg, #0d1117, rgba(110, 112, 116, 0.4));
+  --card-gradient-active: 1;
+  --app-background-fill: radial-gradient(circle at 18% 22%, rgba(239, 241, 244, 0.25), transparent 60%);
+  --app-background-gradient-active: 1;
+  --button-gradient-intensity: 1;
+  --card-gradient-intensity: 0.6;
+  --button-gloss-gradient: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.45), transparent 55%), radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.15), transparent 65%), linear-gradient(135deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.05));
+  --button-gloss-opacity: 0.15;
+  --button-gloss-hover-opacity: 0.25;
+  --button-gloss-active-opacity: 0.1;
+  --button-gloss-enabled: 1;
+
+  /* Glassmorphism - computed CSS values */
+  --glass-blur: 0px;
+  --glass-opacity: 1;
+  --glass-gradient: none;
+  --glass-gradient-strength: 0;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: none;
+  --glass-card-overlay: linear-gradient(150deg, rgba(42, 49, 59, 0.08), rgba(62, 69, 79, 0.02));
+  --card-backdrop: none;
+  --card-bg-opacity: 1;
+  --glow-intensity: 0;
+  --glass-apply-to-cards: 1;
+  --glass-apply-to-shell: 1;
+  --color-bg-secondary-glass: rgba(22, 29, 39, 1);
+  --color-bg-primary-glass: rgba(13, 17, 23, 1);
+
+  /* Effect flags (0 = disabled, 1 = enabled) */
+  --effect-neon: 0;
+  --effect-shimmer: 0;
+  --effect-tilt: 0;
+  --effect-magnetic: 0;
+  --effect-glow-badges: 0;
+  --effect-neon-scrollbar: 0;
+  --effect-link-glow: 0;
+  --effect-table-glow: 0;
+  --effect-progress-glow: 0;
+  --effect-input-glow: 0;
+  --effect-modal-glass: 0;
+  --effect-dropdown-glass: 0;
+  --effect-checkbox-glow: 0;
+  --effect-heading-glow: 0;
+  --effect-button-glow: 0;
+
+  /* Effect colors */
+  --neon-primary: #60a5fa;
+  --neon-secondary: rgba(167, 139, 250, 0.5);
+}

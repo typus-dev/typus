@@ -1,0 +1,54 @@
+FROM node:20-slim as builder
+
+ARG APP_UID=1100
+ARG APP_GID=150
+ARG PROJECT_PATH=/app
+ENV PROJECT_PATH=${PROJECT_PATH}
+
+RUN apt-get update && apt-get install -y openssl sudo default-mysql-client && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g tsx
+
+RUN groupadd -g $APP_GID appgroup \
+  && useradd -u $APP_UID -g $APP_GID -m -s /bin/bash appuser
+
+USER appuser
+WORKDIR /tmp/build
+
+# Copy only necessary package.json files
+COPY --chown=appuser:appgroup @typus-core/backend/package.json ./@typus-core/backend/
+COPY --chown=appuser:appgroup @typus-core/shared/package.json ./@typus-core/shared/
+
+# LITE uses npm (no pnpm workspace)
+RUN cd @typus-core/backend && npm install --legacy-peer-deps
+
+FROM node:20-slim
+
+ARG APP_UID=1100
+ARG APP_GID=150
+ARG PROJECT_PATH=/app
+ENV PROJECT_PATH=${PROJECT_PATH}
+
+RUN apt-get update && apt-get install -y openssl sudo default-mysql-client && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g tsx
+
+RUN groupadd -g $APP_GID appgroup \
+  && useradd -u $APP_UID -g $APP_GID -m -s /bin/bash appuser
+
+USER root
+WORKDIR ${PROJECT_PATH}
+
+COPY --chown=appuser:appgroup . .
+COPY --from=builder --chown=appuser:appgroup /tmp/build/@typus-core/backend/node_modules ./@typus-core/backend/node_modules
+
+# Copy and make entrypoint executable
+COPY @typus-core/backend/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh && chown appuser:appgroup /usr/local/bin/entrypoint.sh
+
+USER appuser
+
+EXPOSE 3001
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["./@typus-core/backend/backend-startup.sh"]

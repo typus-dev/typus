@@ -1,0 +1,146 @@
+# =============================================================================
+# Stage 1: Build Frontend
+# =============================================================================
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /build
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy workspace files
+COPY pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json .npmrc ./
+
+# Copy package files
+COPY @typus-core/frontend/package.json @typus-core/frontend/
+COPY @typus-core/shared/package.json @typus-core/shared/
+
+# Install dependencies
+RUN pnpm install --no-frozen-lockfile --filter @typus-core/frontend...
+
+# Copy source code
+COPY @typus-core/frontend @typus-core/frontend
+COPY @typus-core/shared @typus-core/shared
+
+# Copy plugins (needed for frontend build)
+COPY plugins /build/plugins
+# Remove plugins/tsconfig.json to avoid build errors (it extends backend tsconfig)
+RUN rm -f /build/plugins/tsconfig.json
+
+# Copy public assets (favicon, etc.)
+COPY public /build/public
+
+# Copy typus-manifest.json (needed by frontend build)
+COPY typus-manifest.json /build/typus-manifest.json
+
+# Copy custom layouts (needed for frontend build - loaded via import.meta.glob)
+COPY custom /build/custom
+
+# Build frontend for production
+WORKDIR /build/@typus-core/frontend
+RUN NODE_ENV=production pnpm run build
+
+# =============================================================================
+# Stage 2: Runtime - All-in-One Container (nginx + backend)
+# =============================================================================
+FROM node:20-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    nginx \
+    supervisor \
+    ca-certificates \
+    curl \
+    default-mysql-client \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install tsx globally for TypeScript execution
+RUN npm install -g tsx pnpm
+
+# Create app directory
+WORKDIR /app
+
+# Copy pnpm workspace files
+COPY pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json .npmrc ./
+
+# Copy root package.json for shared dependencies (tsyringe, etc.)
+COPY package.json ./
+
+# Copy package files for dependency installation
+COPY @typus-core/backend/package.json @typus-core/backend/
+COPY @typus-core/shared/package.json @typus-core/shared/
+
+# Install all dependencies (root + backend) - root deps get hoisted for plugin access
+RUN pnpm install --no-frozen-lockfile
+
+# Create symlink for tsyringe (needed by plugins)
+RUN ln -sf /app/node_modules/.pnpm/tsyringe@4.10.0/node_modules/tsyringe /app/node_modules/tsyringe
+
+# Copy data/prisma package.json for dependency installation
+COPY data/prisma/package.json data/prisma/
+
+# Install data/prisma dependencies (includes Prisma CLI for migrations/generation)
+RUN pnpm install --no-frozen-lockfile --filter @data/prisma...
+
+# Copy backend SOURCE files (TypeScript, NOT compiled!)
+COPY @typus-core/backend @typus-core/backend
+COPY @typus-core/shared @typus-core/shared
+
+# Copy plugins (needed for backend modules and DSL)
+COPY plugins /app/plugins
+
+# Copy built frontend from Stage 1
+COPY --from=frontend-builder /build/@typus-core/frontend/dist /app/@typus-core/frontend/dist
+
+# Copy Prisma schemas and pre-generated client
+COPY data/prisma /app/data/prisma
+
+# Copy typus-manifest.json for migrations tracking
+COPY typus-manifest.json /app/typus-manifest.json
+
+# Copy public directory
+COPY public /app/public
+
+# Copy custom overrides (layouts, pages, styles) - site-specific customizations
+COPY custom /app/custom
+
+# Copy database seeds (create empty dir if not exists)
+COPY data/seeds /app/data/seeds
+
+# Copy baseline SQL files for first-time setup
+COPY data/baseline /app/data/baseline
+
+# Copy nginx configuration (from new configs location)
+COPY docker/configs/nginx.conf /etc/nginx/nginx.conf
+COPY docker/configs/redirects.conf /etc/nginx/conf.d/redirects.conf
+
+# Copy supervisord configuration (from new configs location)
+COPY docker/configs/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy backend startup script (PROD profile for production)
+COPY @typus-core/backend/backend-startup-prod.sh /app/@typus-core/backend/backend-startup-prod.sh
+RUN chmod +x /app/@typus-core/backend/backend-startup-prod.sh
+
+# Create required directories
+RUN mkdir -p /app/storage/cache/html \
+    /app/storage/html-cache \
+    /app/logs \
+    /var/log/nginx \
+    /var/log/supervisor \
+    /var/run \
+    /app/docker/scripts
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3001
+
+# Expose HTTP port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost/health || exit 1
+
+# Start supervisord
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["@typus-core/backend/src/*"],
+      "@typus-core/backend/*": ["@typus-core/backend/src/*"],
+      "@typus-core/frontend/*": ["@typus-core/frontend/src/*"],
+      "@typus-core/shared/*": ["@typus-core/shared/*"],
+      "@custom/*": ["custom/*"]
+    },
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "lib": ["ES2022", "DOM"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    // 2025-01-13: Prevent TypeScript from emitting .js files
+    // We use tsx runtime for both dev and prod, so compiled artifacts are not needed
+    // and cause duplicate module registration errors when they exist alongside .ts sources
+    "noEmit": true
+  }
+}

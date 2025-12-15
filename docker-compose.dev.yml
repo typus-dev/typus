@@ -1,0 +1,77 @@
+version: '3.8'
+
+# DEVELOPMENT Configuration
+# Single container: nginx + backend (managed by supervisord)
+# Features: Hot reload with bind mounts, external MySQL, Traefik
+# Use: docker compose -f docker-compose.dev.yml up -d
+# Or: ./manage.sh switch dev && docker compose up -d
+
+services:
+  typus_lite:
+    container_name: ${COMPOSE_PROJECT_NAME}_lite
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - traefik-net
+      - common-mysql-shared
+      - cache-generator-net
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - REDIS_ENABLED=false
+      - DISPATCHER_ENABLED=false
+      - PROJECT_PATH=/app
+      - STORAGE_PATH=/app/storage
+      - UPLOADS_PATH=/app/storage/uploads
+    volumes:
+      # BIND MOUNTS for hot reload:
+      - ${PROJECT_PATH}/@typus-core/backend:/app/@typus-core/backend
+      - ${PROJECT_PATH}/@typus-core/frontend:/app/@typus-core/frontend
+      - ${PROJECT_PATH}/@typus-core/shared:/app/@typus-core/shared
+      - ${PROJECT_PATH}/plugins:/app/plugins
+      - ${PROJECT_PATH}/custom:/app/custom
+      - ${PROJECT_PATH}/data:/app/data
+      - ${PROJECT_PATH}/public:/app/public
+      - ${PROJECT_PATH}/typus-manifest.json:/app/typus-manifest.json
+      - ${PROJECT_PATH}/.npmrc:/app/.npmrc
+      - ${PROJECT_PATH}/pnpm-workspace.yaml:/app/pnpm-workspace.yaml
+
+      # NAMED VOLUME for node_modules (shamefully-hoist - all in root):
+      - root_modules:/app/node_modules
+
+      # BIND MOUNT for storage (dev mode - for file visibility on host):
+      - ${PROJECT_PATH}/storage:/app/storage
+
+      # NAMED VOLUMES for data:
+      - logs:/app/logs
+      - nginx-logs:/var/log/nginx
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-net"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}_lite.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}_lite.entrypoints=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}_lite.tls.certresolver=letsEncrypt"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}_lite.loadbalancer.server.port=80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  traefik-net:
+    external: true
+  common-mysql-shared:
+    external: true
+  cache-generator-net:
+    external: true
+
+volumes:
+  root_modules:
+  logs:
+  nginx-logs:

@@ -1,0 +1,8 @@
+/* ================================================================
+   BASE STYLES - Core styles entry point
+
+   This file imports base styles that are applied globally.
+   Static CSS files are served from public/styles/ via nginx.
+   ================================================================ */
+
+/* Tailwind base layer is included via tailwind.css */

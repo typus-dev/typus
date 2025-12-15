@@ -1,0 +1,40 @@
+/*
+ * ⚠️  DO NOT MODIFY CLASS STRUCTURE
+ * 
+ * This is a REFERENCE theme used as template for theme generation.
+ * Changing class names or removing classes will break theme generator.
+ * 
+ * You MAY modify:
+ * - Default values (padding, colors, sizes)
+ * - Add new classes
+ * 
+ * You MUST NOT:
+ * - Rename existing classes
+ * - Remove existing classes
+ * - Change selector structure
+ */
+
+/* ==========================================================================
+   08-ICONS - Icon utilities
+   ========================================================================== */
+
+/* Icon Sizes */
+[data-theme="ocean-theme"] .theme-icons-size-xs { width: 0.75rem; height: 0.75rem; }
+[data-theme="ocean-theme"] .theme-icons-size-sm { width: 1rem; height: 1rem; }
+[data-theme="ocean-theme"] .theme-icons-size-md { width: 1.5rem; height: 1.5rem; }
+[data-theme="ocean-theme"] .theme-icons-size-lg { width: 2rem; height: 2rem; }
+[data-theme="ocean-theme"] .theme-icons-size-xl { width: 2.5rem; height: 2.5rem; }
+
+/* Icon Colors */
+[data-theme="ocean-theme"] .theme-icons-color-primary { color: var(--color-text-secondary); }
+[data-theme="ocean-theme"] .theme-icons-color-secondary { color: var(--color-text-tertiary); }
+[data-theme="ocean-theme"] .theme-icons-color-success { color: var(--color-text-success); }
+[data-theme="ocean-theme"] .theme-icons-color-warning { color: var(--color-text-warning); }
+[data-theme="ocean-theme"] .theme-icons-color-error { color: var(--color-text-error); }
+[data-theme="ocean-theme"] .theme-icons-color-info { color: var(--color-text-info); }
+[data-theme="ocean-theme"] .theme-icons-color-contrast { color: var(--color-text-contrast); }
+
+/* Icon Stroke */
+[data-theme="ocean-theme"] .theme-icons-stroke-thin { stroke-width: 1; }
+[data-theme="ocean-theme"] .theme-icons-stroke-regular { stroke-width: 1.5; }
+[data-theme="ocean-theme"] .theme-icons-stroke-bold { stroke-width: 2; }

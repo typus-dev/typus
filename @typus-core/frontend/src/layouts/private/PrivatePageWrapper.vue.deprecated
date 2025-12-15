@@ -1,0 +1,128 @@
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+
+/**
+ * PrivatePageWrapper - Page wrapper for the private layout.
+ * Provides consistent padding, max-width, centering,
+ * vertical spacing, optional header with actions, and back button.
+ */
+
+const router = useRouter()
+
+// Define component properties
+const props = defineProps({
+  /**
+   * Optional page title displayed in the header.
+   */
+  title: {
+    type: String,
+    default: '',
+  },
+  /**
+   * Optional page subtitle displayed below the title.
+   */
+  subtitle: {
+    type: String,
+    default: '',
+  },
+
+  /**
+   * Set to true to disable background completely.
+   */
+  noBackground: {
+    type: Boolean,
+    default: false,
+  },
+
+  /**
+   * Show back button (default: false)
+   */
+  showBackButton: {
+    type: Boolean,
+    default: false,
+  },
+
+  /**
+   * Where to navigate when back button is clicked.
+   * Can be a route path string or a function.
+   */
+  backTo: {
+    type: [String, Function],
+    default: null,
+  },
+
+  /**
+   * Label for the back button (default: "< Back")
+   */
+  backButtonLabel: {
+    type: String,
+    default: '< Back',
+  },
+
+  /**
+   * Custom handler for back button click
+   */
+  onBackClick: {
+    type: Function,
+    default: null,
+  },
+});
+
+const handleBackClick = () => {
+  if (props.onBackClick) {
+    props.onBackClick()
+  } else if (typeof props.backTo === 'function') {
+    props.backTo()
+  } else if (typeof props.backTo === 'string') {
+    router.push(props.backTo)
+  } else {
+    // Fallback: router.back() but with safety check
+    if (window.history.length > 1) {
+      router.back()
+    } else {
+      router.push('/')
+    }
+  }
+}
+</script>
+
+<template>
+  <!-- PrivatePageWrapper.vue
+  [calc(100vh-76px)]
+  -->
+  <div :class="[
+    'flex flex-col grow h-full w-full max-w-8xl mx-auto p-6',
+    !noBackground && 'theme-colors-background-primary'
+  ]">
+    <header v-if="title || subtitle || $slots.actions || showBackButton" class="mb-8">
+      <!-- Back Button (if enabled) -->
+      <div v-if="showBackButton" class="mb-4">
+        <dx-button
+          variant="outline"
+          @click="handleBackClick"
+        >
+          <template #prefix>
+            <i class="ri-arrow-left-line"></i>
+          </template>
+          {{ backButtonLabel }}
+        </dx-button>
+      </div>
+
+      <!-- Title & Actions -->
+      <div class="flex justify-between items-start gap-4">
+        <div class="flex-1">
+          <h1 v-if="title" class="text-3xl font-bold mb-1">{{ title }}</h1>
+          <p v-if="subtitle" class="text-gray-400 text-sm">{{ subtitle }}</p>
+        </div>
+        <div v-if="$slots.actions" class="flex gap-3 items-center">
+          <!-- @slot Actions slot for header buttons -->
+          <slot name="actions" />
+        </div>
+      </div>
+    </header>
+    <div class="space-y-10">
+      <!-- @slot Default slot for page content -->
+      <slot />
+    </div>
+  </div>
+</template>

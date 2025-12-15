@@ -1,0 +1,33 @@
+FROM node:20-slim
+
+ARG APP_UID=1100
+ARG APP_GID=150
+ARG PROJECT_PATH=/app
+ENV PROJECT_PATH=${PROJECT_PATH}
+
+RUN apt-get update && apt-get install -y build-essential python3 && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g nodemon ts-node typescript tsx
+
+RUN groupadd -g $APP_GID appgroup \
+  && useradd -u $APP_UID -g $APP_GID -m -s /bin/bash appuser \
+  && mkdir -p ${PROJECT_PATH}/frontend \
+  && chown -R appuser:appgroup ${PROJECT_PATH}
+
+USER appuser
+WORKDIR ${PROJECT_PATH}
+
+# Copy package files for npm install
+COPY --chown=appuser:appgroup package.json ./
+COPY --chown=appuser:appgroup @typus-core/frontend/package.json ./@typus-core/frontend/
+COPY --chown=appuser:appgroup @typus-core/shared/package.json ./@typus-core/shared/
+
+# LITE uses npm (no pnpm)
+RUN cd @typus-core/frontend && npm install --legacy-peer-deps
+
+# Copy rest of application
+COPY --chown=appuser:appgroup . .
+
+EXPOSE 5173
+
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

@@ -1,0 +1,72 @@
+FROM node:20-slim as builder
+
+ARG APP_UID=1100
+ARG APP_GID=150
+ARG PROJECT_PATH
+
+ARG VITE_API_URL
+
+ENV PROJECT_PATH=${PROJECT_PATH}
+ENV VITE_API_URL=${VITE_API_URL}
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y build-essential python3 \
+ && npm install -g pnpm
+
+# Create non-root user and group
+RUN groupadd -g $APP_GID appgroup \
+ && useradd -u $APP_UID -g $APP_GID -m -s /bin/bash appuser
+
+USER appuser
+
+WORKDIR /tmp/build
+
+# Copy dependency-related files for pnpm workspace
+COPY --chown=appuser:appgroup pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY --chown=appuser:appgroup @typus-core/frontend/package.json ./@typus-core/frontend/
+COPY --chown=appuser:appgroup @typus-core/shared/package.json ./@typus-core/shared/
+COPY --chown=appuser:appgroup custom/frontend/package.json ./custom/frontend/
+
+# Install dependencies for the entire workspace
+RUN pnpm install --frozen-lockfile
+
+# Copy the rest of the application source code
+COPY --chown=appuser:appgroup . .
+
+# Build the frontend application
+WORKDIR /tmp/build/@typus-core/frontend
+RUN pnpm run build
+
+# Production stage
+FROM node:20-slim
+
+ARG APP_UID=1100
+ARG APP_GID=150
+ARG PROJECT_PATH
+ENV PROJECT_PATH=${PROJECT_PATH}
+ENV NODE_ENV=production
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+ && npm install -g pnpm serve \
+ && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user and group
+RUN groupadd -g $APP_GID appgroup \
+ && useradd -u $APP_UID -g $APP_GID -m -s /bin/bash appuser \
+ && mkdir -p ${PROJECT_PATH}/@typus-core/frontend \
+ && chown -R appuser:appgroup ${PROJECT_PATH}
+
+USER appuser
+
+WORKDIR ${PROJECT_PATH}/@typus-core/frontend
+
+# Copy built application
+COPY --from=builder --chown=appuser:appgroup /tmp/build/@typus-core/frontend/dist ./dist
+COPY --from=builder --chown=appuser:appgroup /tmp/build/@typus-core/frontend/package.json ./package.json
+
+# Expose frontend port
+EXPOSE 3000
+
+# Serve the built application
+CMD ["serve", "-s", "dist", "-l", "3000"]

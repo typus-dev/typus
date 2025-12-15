@@ -1,0 +1,259 @@
+#!/bin/bash
+
+# =============================================================================
+# Typus LITE - Safe Update Script
+# =============================================================================
+# Usage: ./update.sh [--fresh]
+#
+# Options:
+#   --fresh    Clean install with database reset (DESTRUCTIVE!)
+#              Without this flag, only updates core, preserves everything
+#
+# What it does:
+#   1. Full backup of site directory (excluding storage/uploads)
+#   2. Backup database
+#   3. Copy @typus-core/ from release (overwrite)
+#   4. Update typus-manifest.json
+#   5. Create .env.update / docker-compose.yml.update if configs differ
+#   6. Rebuild container
+#
+# What is preserved:
+#   - plugins/
+#   - custom/
+#   - storage/
+#   - scripts/
+#   - .env
+#   - docker-compose.yml
+#   - All other local files
+# =============================================================================
+
+set -e
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Parse arguments
+FRESH_INSTALL=false
+if [ "$1" = "--fresh" ]; then
+    FRESH_INSTALL=true
+fi
+
+# Auto-detect installation directory (where this script is run from)
+INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ "$(basename "$INSTALL_DIR")" = "setup" ]; then
+    INSTALL_DIR="$(dirname "$INSTALL_DIR")"
+fi
+
+BACKUP_DIR="$INSTALL_DIR/storage/backups"
+RELEASE_DIR="/server/sites/typus-lite/release-system/releases"
+TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+
+# Read database credentials from .env
+if [ -f "$INSTALL_DIR/.env" ]; then
+    source "$INSTALL_DIR/.env"
+fi
+
+# Support both old (DB_*) and new (DATABASE_*) variable names
+DB_HOST="${DB_HOST:-${DATABASE_HOST:-common-mysql}}"
+DB_PORT="${DB_PORT:-${DATABASE_PORT:-3306}}"
+DB_NAME="${DB_NAME:-${DATABASE_NAME:-}}"
+DB_USER="${DB_USER:-${DATABASE_USER:-root}}"
+DB_PASSWORD="${DB_PASSWORD:-${DATABASE_PASSWORD:-}}"
+
+# Get domain from .env or directory name
+DOMAIN="${TYPUS_DOMAIN:-$(basename $INSTALL_DIR)}"
+
+echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
+if [ "$FRESH_INSTALL" = true ]; then
+    echo -e "${RED}║  Update Site (FRESH - DANGER!)         ║${NC}"
+else
+    echo -e "${BLUE}║  Update Site (safe update)             ║${NC}"
+fi
+echo -e "${BLUE}╚════════════════════════════════════════╝${NC}"
+echo ""
+echo -e "${CYAN}Domain:${NC} $DOMAIN"
+echo -e "${CYAN}Database:${NC} $DB_NAME @ $DB_HOST"
+echo -e "${CYAN}Install Dir:${NC} $INSTALL_DIR"
+echo ""
+
+# Check if release exists
+LATEST_RELEASE=$(ls -t "$RELEASE_DIR"/lite-complete-*.tar.gz 2>/dev/null | head -1)
+if [ -z "$LATEST_RELEASE" ]; then
+    echo -e "${YELLOW}No release found. Building fresh release...${NC}"
+    if [ -f "/server/sites/typus-lite/test-installations/1-make-release.sh" ]; then
+        cd /server/sites/typus-lite/test-installations
+        ./1-make-release.sh
+        LATEST_RELEASE=$(ls -t "$RELEASE_DIR"/lite-complete-*.tar.gz 2>/dev/null | head -1)
+    else
+        echo -e "${RED}❌ Cannot build release - script not found${NC}"
+        exit 1
+    fi
+fi
+
+echo -e "${BLUE}📦 Using release: $(basename $LATEST_RELEASE)${NC}"
+echo ""
+
+cd "$INSTALL_DIR"
+mkdir -p "$BACKUP_DIR"
+
+# =============================================================================
+# STEP 1: Full backup of site directory (excluding uploads)
+# =============================================================================
+echo -e "${BLUE}📦 Backing up site directory...${NC}"
+SITE_BACKUP="$BACKUP_DIR/site_${TIMESTAMP}.tar.gz"
+tar -czf "$SITE_BACKUP" \
+    --exclude='storage/uploads' \
+    --exclude='storage/backups' \
+    --exclude='node_modules' \
+    -C "$(dirname $INSTALL_DIR)" \
+    "$(basename $INSTALL_DIR)" 2>/dev/null || true
+if [ -s "$SITE_BACKUP" ]; then
+    SITE_BACKUP_SIZE=$(du -h "$SITE_BACKUP" | cut -f1)
+    echo -e "${GREEN}✓ Site backed up: $(basename $SITE_BACKUP) ($SITE_BACKUP_SIZE)${NC}"
+else
+    echo -e "${YELLOW}⚠️  Site backup failed or empty${NC}"
+fi
+
+# =============================================================================
+# STEP 2: Backup database
+# =============================================================================
+if [ -n "$DB_NAME" ] && [ -n "$DB_PASSWORD" ]; then
+    echo -e "${BLUE}📦 Backing up database...${NC}"
+    DB_BACKUP="$BACKUP_DIR/${DB_NAME}_${TIMESTAMP}.sql.gz"
+    docker exec $DB_HOST mysqldump -u $DB_USER -p$DB_PASSWORD $DB_NAME 2>/dev/null | gzip > "$DB_BACKUP" || true
+    if [ -s "$DB_BACKUP" ]; then
+        DB_BACKUP_SIZE=$(du -h "$DB_BACKUP" | cut -f1)
+        echo -e "${GREEN}✓ Database backed up: $(basename $DB_BACKUP) ($DB_BACKUP_SIZE)${NC}"
+    else
+        echo -e "${YELLOW}⚠️  No existing database to backup${NC}"
+        rm -f "$DB_BACKUP"
+    fi
+else
+    echo -e "${YELLOW}⚠️  Database credentials not found in .env, skipping DB backup${NC}"
+fi
+
+# =============================================================================
+# FRESH INSTALL: Reset database (only with --fresh flag)
+# =============================================================================
+if [ "$FRESH_INSTALL" = true ]; then
+    echo -e "${RED}⚠️  FRESH INSTALL: This will reset the database!${NC}"
+    read -p "Are you sure? (yes/no): " CONFIRM
+    if [ "$CONFIRM" != "yes" ]; then
+        echo -e "${YELLOW}Aborted.${NC}"
+        exit 1
+    fi
+    if [ -n "$DB_NAME" ] && [ -n "$DB_PASSWORD" ]; then
+        docker exec $DB_HOST mysql -u $DB_USER -p$DB_PASSWORD -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;" 2>/dev/null
+        echo -e "${GREEN}✓ Database reset${NC}"
+    fi
+fi
+
+# =============================================================================
+# STEP 3: Extract release to temp directory
+# =============================================================================
+echo -e "${BLUE}📦 Extracting release...${NC}"
+TEMP_DIR=$(mktemp -d)
+tar -xzf "$LATEST_RELEASE" -C "$TEMP_DIR"
+echo -e "${GREEN}✓ Release extracted to temp${NC}"
+
+# =============================================================================
+# STEP 4: Copy core files (overwrite)
+# =============================================================================
+echo -e "${BLUE}🔄 Updating @typus-core/...${NC}"
+rm -rf "$INSTALL_DIR/@typus-core"
+cp -r "$TEMP_DIR/@typus-core" "$INSTALL_DIR/"
+echo -e "${GREEN}✓ @typus-core/ updated${NC}"
+
+echo -e "${BLUE}🔄 Updating typus-manifest.json...${NC}"
+cp "$TEMP_DIR/typus-manifest.json" "$INSTALL_DIR/"
+echo -e "${GREEN}✓ typus-manifest.json updated${NC}"
+
+echo -e "${BLUE}🔄 Updating pnpm-lock.yaml...${NC}"
+cp "$TEMP_DIR/pnpm-lock.yaml" "$INSTALL_DIR/"
+echo -e "${GREEN}✓ pnpm-lock.yaml updated${NC}"
+
+# =============================================================================
+# STEP 5: Check config files (create .update if different)
+# =============================================================================
+echo -e "${BLUE}🔍 Checking config files...${NC}"
+
+# Check .env
+if [ -f "$INSTALL_DIR/.env" ] && [ -f "$TEMP_DIR/.env.example" ]; then
+    if ! diff -q "$INSTALL_DIR/.env" "$TEMP_DIR/.env.example" > /dev/null 2>&1; then
+        cp "$TEMP_DIR/.env.example" "$INSTALL_DIR/.env.update"
+        echo -e "${YELLOW}⚠️  .env differs - created .env.update for review${NC}"
+    else
+        echo -e "${GREEN}✓ .env unchanged${NC}"
+    fi
+elif [ ! -f "$INSTALL_DIR/.env" ]; then
+    cp "$TEMP_DIR/.env.example" "$INSTALL_DIR/.env"
+    echo -e "${GREEN}✓ .env created from template${NC}"
+fi
+
+# Check docker-compose.yml
+if [ -f "$INSTALL_DIR/docker-compose.yml" ] && [ -f "$TEMP_DIR/docker-compose.yml" ]; then
+    if ! diff -q "$INSTALL_DIR/docker-compose.yml" "$TEMP_DIR/docker-compose.yml" > /dev/null 2>&1; then
+        cp "$TEMP_DIR/docker-compose.yml" "$INSTALL_DIR/docker-compose.yml.update"
+        echo -e "${YELLOW}⚠️  docker-compose.yml differs - created docker-compose.yml.update for review${NC}"
+    else
+        echo -e "${GREEN}✓ docker-compose.yml unchanged${NC}"
+    fi
+elif [ ! -f "$INSTALL_DIR/docker-compose.yml" ]; then
+    cp "$TEMP_DIR/docker-compose.yml" "$INSTALL_DIR/docker-compose.yml"
+    echo -e "${GREEN}✓ docker-compose.yml created${NC}"
+fi
+
+# =============================================================================
+# STEP 6: Cleanup temp
+# =============================================================================
+rm -rf "$TEMP_DIR"
+
+# =============================================================================
+# STEP 7: Stop and rebuild container
+# =============================================================================
+echo -e "${BLUE}🐳 Rebuilding container...${NC}"
+docker compose down 2>/dev/null || true
+docker compose up -d --build
+echo -e "${GREEN}✓ Container rebuilt${NC}"
+
+# =============================================================================
+# DONE
+# =============================================================================
+echo ""
+echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║  ✓ Site Updated!                       ║${NC}"
+echo -e "${GREEN}╚════════════════════════════════════════╝${NC}"
+echo ""
+
+echo -e "${CYAN}Backups created:${NC}"
+[ -f "$SITE_BACKUP" ] && echo -e "  Site: $SITE_BACKUP"
+[ -f "$DB_BACKUP" ] && echo -e "  DB:   $DB_BACKUP"
+echo ""
+
+# Check for .update files
+if [ -f "$INSTALL_DIR/.env.update" ] || [ -f "$INSTALL_DIR/docker-compose.yml.update" ]; then
+    echo -e "${YELLOW}⚠️  Review these files for config changes:${NC}"
+    [ -f "$INSTALL_DIR/.env.update" ] && echo -e "  - .env.update"
+    [ -f "$INSTALL_DIR/docker-compose.yml.update" ] && echo -e "  - docker-compose.yml.update"
+    echo ""
+fi
+
+# Show version
+if [ -f "$INSTALL_DIR/typus-manifest.json" ]; then
+    VERSION=$(grep -o '"version": "[^"]*"' "$INSTALL_DIR/typus-manifest.json" | cut -d'"' -f4)
+    echo -e "${CYAN}Version:${NC} $VERSION"
+fi
+
+echo ""
+echo -e "${CYAN}Container status:${NC}"
+docker compose ps
+echo ""
+
+echo -e "${CYAN}To restore from backup:${NC}"
+[ -f "$SITE_BACKUP" ] && echo -e "  tar -xzf $SITE_BACKUP -C $(dirname $INSTALL_DIR)/"
+echo ""

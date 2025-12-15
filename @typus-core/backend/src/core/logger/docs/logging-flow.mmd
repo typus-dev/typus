@@ -1,0 +1,56 @@
+graph TD
+    subgraph Frontend
+        F_Logger[Frontend Logger]
+        F_Console[Console Transport]
+        F_API[API Transport]
+        F_Buffer[Log Buffer]
+    end
+
+    subgraph Backend
+        B_API[API Endpoint]
+        B_LogModule[Log Module]
+        B_LogService[Log Service]
+        B_LogRepo[Log Repository]
+        B_Logger[Backend Logger]
+        B_Console[Console Transport]
+        B_File[File Transport]
+        B_DB[Database Transport]
+    end
+
+    subgraph Database
+        DB_Logs[(Logs Table)]
+        DB_Errors[(Errors Table)]
+        DB_Stats[(Log Stats Table)]
+    end
+
+    %% Frontend Flow
+    F_Logger --> F_Console
+    F_Logger --> F_API
+    F_API --> F_Buffer
+    F_Buffer -- Batch Send --> B_API
+
+    %% Backend Flow
+    B_API --> B_LogModule
+    B_LogModule --> B_LogService
+    B_LogService --> B_LogRepo
+    B_LogRepo --> DB_Logs
+    B_LogRepo --> DB_Errors
+
+    %% Backend Logger Flow
+    B_Logger --> B_Console
+    B_Logger --> B_File
+    B_Logger --> B_DB
+    B_DB --> DB_Logs
+    B_DB --> DB_Errors
+
+    %% Stats Generation
+    DB_Logs -- Aggregation --> DB_Stats
+
+    %% Styling
+    classDef frontend fill:#d4f1f9,stroke:#05a,stroke-width:2px
+    classDef backend fill:#d5e8d4,stroke:#082,stroke-width:2px
+    classDef database fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    
+    class F_Logger,F_Console,F_API,F_Buffer frontend
+    class B_API,B_LogModule,B_LogService,B_LogRepo,B_Logger,B_Console,B_File,B_DB backend
+    class DB_Logs,DB_Errors,DB_Stats database

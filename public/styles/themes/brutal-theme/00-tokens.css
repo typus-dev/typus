@@ -1,0 +1,184 @@
+/* 00 - Tokens: CSS custom properties for brutal-theme */
+[data-theme="brutal-theme"] {
+  /* Text colors */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255,255,255,0.6);
+  --color-text-tertiary: rgba(255, 255, 255, 0.6);
+  --color-text-disabled: rgba(255, 255, 255, 0.6);
+  --color-text-contrast: #000000;
+  --color-text-accent: #ff3333;
+  --color-text-on-accent: #ffffff;
+  --color-text-success: #22c55e;
+  --color-text-on-success: #ffffff;
+  --color-text-warning: #f59e0b;
+  --color-text-error: #ef4444;
+  --color-text-info: #3b82f6;
+
+  /* Background colors */
+  --color-bg-primary: #0a0a0a;
+  --color-bg-secondary: #161616;
+  --color-bg-tertiary: #232323;
+  --color-bg-surface: #161616;
+  --color-bg-hover: rgba(255, 255, 255, 0.05);
+  --color-bg-disabled: #232323;
+
+  /* Accent backgrounds */
+  --color-bg-accent: #4d0f0f;
+  --color-bg-accent-solid: #ff3333;
+  --color-bg-accent-light: #4d0f0f;
+  --color-bg-accent-hover: #ff4747;
+  --color-bg-accent-glow: rgba(255, 51, 51, 0.15);
+
+  /* Semantic backgrounds */
+  --color-bg-success: #22c55e;
+  --color-bg-success-light: #0a3b1c;
+  --color-bg-success-hover: #38cb6e;
+  --color-bg-warning: #f59e0b;
+  --color-bg-warning-light: #4a2f03;
+  --color-bg-warning-hover: #f6a823;
+  --color-bg-error: #ef4444;
+  --color-bg-error-light: #481414;
+  --color-bg-error-hover: #f15757;
+  --color-bg-info: #3b82f6;
+  --color-bg-info-light: #12274a;
+  --color-bg-info-hover: #4f8ff7;
+
+  /* Border colors */
+  --color-border-primary: #333333;
+  --color-border-secondary: #222222;
+  --color-border-tertiary: #1f1f1f;
+  --color-border-disabled: #242424;
+  --color-border-focus: #333333;
+  --color-border-error: #ef4444;
+  --color-border-info: #3b82f6;
+  --color-border-success: #22c55e;
+  --color-border-warning: #f59e0b;
+
+  /* Ring colors */
+  --color-ring-focus: rgba(255, 51, 51, 0.5);
+  --color-ring-error: rgba(239, 68, 68, 0.5);
+  --color-ring-offset: #0a0a0a;
+
+  /* Accent colors */
+  --color-accent-primary: #ff3333;
+  --color-accent-secondary: #ff5c5c;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  --spacing-4xl: 6rem;
+  --spacing-5xl: 8rem;
+
+  /* Component spacing */
+  --input-padding: 0.5rem 0.75rem;
+  --button-padding: 0.875rem 1.5rem;
+  --card-padding: 1.5rem;
+
+  /* Border radius */
+  --radius-sm: calc(0 * 0.5);
+  --radius-md: 0;
+  --radius-lg: calc(0 * 1.5);
+  --radius-xl: calc(0 * 2);
+  --radius-full: 9999px;
+  --radius-button: 0;
+  --radius-card: 0;
+
+  /* Shadows */
+  --shadow-sm: 4px 4px 0 #ff3333;
+  --shadow-md: 6px 6px 0 #ff3333;
+  --shadow-lg: 8px 8px 0 #ff3333;
+  --shadow-xl: none;
+  --shadow-accent: 0 4px 20px rgba(255, 51, 51, 0.15);
+
+  /* Typography */
+  --font-family-base: "Oswald", "Bebas Neue", "Arial Black", sans-serif;
+  --font-family-heading: "Oswald", "Bebas Neue", "Arial Black", sans-serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+  --font-size-base: 1.0625rem;
+  --line-height-base: 1.6;
+  --font-weight-heading: 700;
+
+  /* Component settings */
+  --focus-ring-width: 2px;
+  --card-border-width: 1px;
+  --input-border-width: 1px;
+  --component-outline-text: #ffffff;
+  --component-outline-bg: #161616;
+  --component-outline-border: #333333;
+  --component-outline-hover-bg: #4d0f0f;
+  --component-outline-hover-border: #ff3333;
+  --component-checkbox-border: #222222;
+  --component-checkbox-border-checked: #ff3333;
+  --component-checkbox-fill: transparent;
+  --component-checkbox-fill-checked: #ff3333;
+  --component-input-background: #161616;
+  --component-input-border: #222222;
+
+  /* Transitions */
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Interaction effects */
+  --hover-scale: 1;
+  --hover-brightness: 1;
+  --hover-translate-y: 0;
+
+  /* Gradient controls */
+  --button-primary-fill: #ff3333;
+  --button-secondary-fill: #161616;
+  --button-gradient-active: 0;
+  --card-surface-fill: #161616;
+  --card-gradient-active: 0;
+  --app-background-fill: #0a0a0a;
+  --app-background-gradient-active: 0;
+  --button-gradient-intensity: 1;
+  --card-gradient-intensity: 1;
+  --button-gloss-gradient: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.45), transparent 55%), radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.15), transparent 65%), linear-gradient(135deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.05));
+  --button-gloss-opacity: 0.35;
+  --button-gloss-hover-opacity: 0.55;
+  --button-gloss-active-opacity: 0.25;
+  --button-gloss-enabled: 1;
+
+  /* Glassmorphism - computed CSS values */
+  --glass-blur: 0px;
+  --glass-opacity: 1;
+  --glass-gradient: none;
+  --glass-gradient-strength: 0;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: none;
+  --glass-card-overlay: linear-gradient(150deg, rgba(42, 42, 42, 0.08), rgba(62, 62, 62, 0.02));
+  --card-backdrop: none;
+  --card-bg-opacity: 1;
+  --glow-intensity: 0;
+  --glass-apply-to-cards: 0;
+  --glass-apply-to-shell: 0;
+  --color-bg-secondary-glass: rgba(22, 22, 22, 1);
+  --color-bg-primary-glass: rgba(10, 10, 10, 1);
+
+  /* Effect flags (0 = disabled, 1 = enabled) */
+  --effect-neon: 0;
+  --effect-shimmer: 0;
+  --effect-tilt: 0;
+  --effect-magnetic: 0;
+  --effect-glow-badges: 0;
+  --effect-neon-scrollbar: 0;
+  --effect-link-glow: 0;
+  --effect-table-glow: 0;
+  --effect-progress-glow: 0;
+  --effect-input-glow: 0;
+  --effect-modal-glass: 0;
+  --effect-dropdown-glass: 0;
+  --effect-checkbox-glow: 0;
+  --effect-heading-glow: 0;
+  --effect-button-glow: 0;
+
+  /* Effect colors */
+  --neon-primary: rgba(96, 165, 250, 0.5);
+  --neon-secondary: rgba(167, 139, 250, 0.5);
+}

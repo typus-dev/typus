@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="{{language}}" data-theme="{{theme}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Title -->
+  <title>{{title}}{{#if siteName}} | {{siteName}} Admin{{/if}}</title>
+
+  <!-- Meta -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Theme CSS -->
+  <link rel="stylesheet" href="/themes/{{theme}}/variables.css">
+  <link rel="stylesheet" href="/themes/{{theme}}/components.css">
+  <link rel="stylesheet" href="/themes/{{theme}}/layouts.css">
+  <link rel="stylesheet" href="/themes/{{theme}}/utilities.css">
+
+  <!-- Custom CSS -->
+  {{#if customCSS}}
+  <style>
+    {{{customCSS}}}
+  </style>
+  {{/if}}
+</head>
+<body class="bg-secondary text-primary min-h-screen">
+
+  <!-- Layout Container -->
+  <div class="min-h-screen">
+
+    <!-- Mobile Overlay (when sidebar open) -->
+    {{#if isSidebarOpen}}
+    <div class="fixed inset-0 bg-black/30 lg:hidden z-30" onclick="closeSidebar()"></div>
+    {{/if}}
+
+    <!-- SIDEBAR_START -->
+    <aside class="fixed top-0 bottom-0 w-72 bg-primary border-r border-primary transform transition-transform duration-300 ease-in-out z-40 {{#unless isSidebarOpen}}-translate-x-full{{/unless}}">
+
+      <div class="flex flex-col h-full">
+
+        <!-- Sidebar Header -->
+        <div class="flex-shrink-0">
+          <div class="h-14 flex items-center px-md border-b border-primary relative">
+
+            <!-- Logo -->
+            <div class="flex items-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:transform-none cursor-pointer">
+              <div class="w-10 h-10 rounded-md flex items-center justify-center mr-sm shrink-0">
+                {{#if siteLogoUrl}}
+                <img src="{{siteLogoUrl}}" alt="{{siteName}}" class="w-full h-full object-contain" />
+                {{else}}
+                <span class="text-lg font-bold">{{siteInitials}}</span>
+                {{/if}}
+              </div>
+              <span class="font-medium hidden lg:inline whitespace-nowrap">
+                {{siteName}}
+              </span>
+            </div>
+
+            <!-- Close Button (Mobile) -->
+            <button class="btn btn-icon btn-ghost lg:hidden absolute right-2 top-1/2 -translate-y-1/2" onclick="closeSidebar()">
+              ✕
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex-1 overflow-y-auto overflow-x-hidden border-t border-primary">
+          <nav class="p-sm">
+            {{#each navItems}}
+            <a
+              href="{{this.href}}"
+              class="nav-link flex items-center gap-sm p-md rounded-md mb-xs {{#if this.active}}active bg-hover{{/if}}"
+              {{#if this.active}}aria-current="page"{{/if}}
+            >
+              {{#if this.icon}}
+              <span class="text-lg">{{this.icon}}</span>
+              {{/if}}
+              <span>{{this.label}}</span>
+              {{#if this.badge}}
+              <span class="badge badge-primary ml-auto">{{this.badge}}</span>
+              {{/if}}
+            </a>
+            {{/each}}
+          </nav>
+        </div>
+
+        <!-- Profile Section (Bottom) -->
+        <div class="flex-shrink-0 border-t border-primary">
+          <div class="p-md flex items-center gap-sm">
+            {{#if user}}
+            <!-- User Avatar -->
+            <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-contrast font-semibold">
+              {{user.initials}}
+            </div>
+            <!-- User Info -->
+            <div class="flex-1 overflow-hidden">
+              <div class="text-sm font-medium truncate">{{user.name}}</div>
+              <div class="text-xs text-secondary truncate">{{user.email}}</div>
+            </div>
+            <!-- Logout Button -->
+            <button class="btn btn-icon btn-ghost btn-sm" onclick="logout()" title="Logout">
+              →
+            </button>
+            {{/if}}
+          </div>
+        </div>
+
+      </div>
+
+    </aside>
+    <!-- SIDEBAR_END -->
+
+    <!-- MAIN_START -->
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col min-h-screen transition-[margin] duration-300 ease-in-out {{#if isSidebarOpen}}lg:ml-72{{/if}}">
+
+      <!-- HEADER_START -->
+      <header class="sticky top-0 z-30 h-14 bg-primary border-b border-primary">
+        <div class="flex items-center justify-between px-md h-full">
+
+          <!-- Left: Menu Toggle + Search -->
+          <div class="flex items-center gap-md">
+            <!-- Menu Toggle -->
+            <button class="btn btn-icon btn-ghost" onclick="toggleSidebar()">
+              ☰
+            </button>
+
+            <!-- Search -->
+            <div class="hidden md:flex items-center">
+              <input
+                type="search"
+                placeholder="Search..."
+                class="input input-sm"
+                style="min-width: 300px;"
+              />
+            </div>
+          </div>
+
+          <!-- Right: Actions -->
+          <div class="flex items-center gap-sm">
+
+            <!-- Notifications -->
+            <button class="btn btn-icon btn-ghost" title="Notifications">
+              🔔
+              {{#if notifications.unread}}
+              <span class="badge badge-error absolute -top-1 -right-1">{{notifications.unread}}</span>
+              {{/if}}
+            </button>
+
+            <!-- Theme Switcher -->
+            <button class="btn btn-icon btn-ghost" onclick="toggleTheme()" title="Toggle Theme">
+              🌙
+            </button>
+
+            <!-- Profile Dropdown -->
+            <div class="relative">
+              <button class="btn btn-icon btn-ghost" onclick="toggleProfileMenu()">
+                <div class="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-contrast text-sm font-semibold">
+                  {{user.initials}}
+                </div>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </header>
+      <!-- HEADER_END -->
+
+      <!-- Content Area -->
+      <main class="flex-grow flex flex-col bg-secondary">
+        <div class="container py-lg">
+          {{{content}}}
+        </div>
+      </main>
+
+    </div>
+    <!-- MAIN_END -->
+
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // Sidebar toggle
+    let sidebarOpen = window.innerWidth >= 1024;
+
+    function toggleSidebar() {
+      sidebarOpen = !sidebarOpen;
+      updateSidebar();
+    }
+
+    function closeSidebar() {
+      if (window.innerWidth < 1024) {
+        sidebarOpen = false;
+        updateSidebar();
+      }
+    }
+
+    function updateSidebar() {
+      const sidebar = document.querySelector('aside');
+      const mainContent = document.querySelector('.flex-1.flex.flex-col');
+
+      if (sidebarOpen) {
+        sidebar.classList.remove('-translate-x-full');
+        mainContent.classList.add('lg:ml-72');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        mainContent.classList.remove('lg:ml-72');
+      }
+    }
+
+    // Theme toggle (cyclic switcher)
+    function toggleTheme() {
+      const html = document.documentElement;
+      const themes = {{{json availableThemes}}};
+      const currentTheme = html.getAttribute('data-theme');
+      const currentIndex = themes.indexOf(currentTheme);
+      const nextIndex = (currentIndex + 1) % themes.length;
+      const newTheme = themes[nextIndex];
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+
+    // Profile menu toggle
+    let profileMenuOpen = false;
+    function toggleProfileMenu() {
+      profileMenuOpen = !profileMenuOpen;
+      // TODO: show/hide profile menu dropdown
+    }
+
+    // Logout
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        window.location.href = '/logout';
+      }
+    }
+
+    // Escape key to close sidebar
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeSidebar();
+      }
+    });
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+      sidebarOpen = window.innerWidth >= 1024;
+      updateSidebar();
+    });
+  </script>
+
+</body>
+</html>

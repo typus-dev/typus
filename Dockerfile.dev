@@ -1,0 +1,66 @@
+# =============================================================================
+# LITE-SINGLE Development Mode
+# Features: Hot reload, bind mounts, live Prisma generation
+# =============================================================================
+FROM node:20-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    nginx \
+    supervisor \
+    ca-certificates \
+    curl \
+    default-mysql-client \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install tsx globally for TypeScript execution and pnpm
+RUN npm install -g tsx pnpm
+
+# Create app directory
+WORKDIR /app
+
+# Copy pnpm workspace files
+COPY pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json .npmrc ./
+
+# Copy package files for dependency installation
+COPY @typus-core/backend/package.json @typus-core/backend/
+COPY @typus-core/frontend/package.json @typus-core/frontend/
+COPY @typus-core/shared/package.json @typus-core/shared/
+
+# Install backend and frontend dependencies
+RUN pnpm install --frozen-lockfile --filter @typus-core/backend...
+RUN pnpm install --frozen-lockfile --filter @typus-core/frontend...
+
+# Copy nginx configuration for dev mode (proxies to Vite)
+COPY docker/configs/nginx-dev.conf /etc/nginx/nginx.conf
+COPY docker/configs/redirects.conf /etc/nginx/conf.d/redirects.conf
+
+# Copy supervisord configuration for development
+COPY docker/configs/supervisord-dev.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy backend startup script (DEV version with Prisma generation)
+COPY @typus-core/backend/backend-startup-dev.sh /app/@typus-core/backend/backend-startup-dev.sh
+RUN chmod +x /app/@typus-core/backend/backend-startup-dev.sh
+
+# Create required directories
+RUN mkdir -p /app/storage/cache/html \
+    /app/logs \
+    /var/log/nginx \
+    /var/log/supervisor \
+    /var/run \
+    /app/docker/scripts
+
+# Set environment variables for development
+ENV NODE_ENV=development
+ENV PORT=3001
+
+# Expose HTTP port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost/health || exit 1
+
+# Start supervisord
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

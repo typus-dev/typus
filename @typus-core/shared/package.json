@@ -1,0 +1,85 @@
+{
+  "name": "@typus-core/shared",
+  "version": "1.0.0",
+  "description": "Shared DSL types and utilities",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./dsl": {
+      "import": "./dist/dsl/index.js",
+      "types": "./dist/dsl/index.d.ts"
+    },
+    "./dsl/types": {
+      "import": "./dsl/types",
+      "types": "./dsl/types.d.ts"
+    },
+    "./dsl/registry": {
+      "import": "./dsl/registry",
+      "types": "./dsl/registry.d.ts"
+    },
+    "./dsl/register-models": {
+      "import": "./dsl/register-models",
+      "types": "./dsl/register-models.d.ts"
+    },
+    "./dsl/*": {
+      "import": "./dsl/*",
+      "types": "./dsl/*.d.ts"
+    },
+    "./dxce/*": {
+      "import": "./dist/dxce/*.js",
+      "types": "./dist/dxce/*.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsc --outDir dist",
+    "generate:models-index": "pnpm exec tsx scripts/generate-models-index.ts",
+    "generate:prisma": "pnpm exec tsx dsl/generate-prisma-from-dsl.ts",
+    "generate:interfaces": "pnpm exec tsx dsl/generate-interfaces.ts",
+    "generate:all": "npm run generate:models-index && npm run generate:prisma && npm run generate:interfaces",
+    "dsl:generate-models-index": "pnpm exec tsx scripts/generate-models-index.ts",
+    "dsl:generate-interfaces": "pnpm exec tsx dsl/generate-interfaces.ts",
+    "dsl:generate-prisma-schemas": "pnpm exec tsx scripts/generate-prisma-schemas.ts",
+    "dsl:generate-all": "npm run dsl:generate-models-index && npm run dsl:generate-interfaces && npm run dsl:generate-prisma-schemas",
+    "db:instant": "pnpm exec tsx scripts/db-instant.ts",
+    "db:validate-all": "pnpm exec tsx scripts/validate-all-models.ts",
+    "watch:dsl": "nodemon --watch dsl/models --ext ts --exec 'npm run generate:interfaces'",
+    "schema:check": "pnpm exec tsx dsl/scripts/schema/check-dsl-prisma.ts",
+    "schema:check-db": "pnpm exec tsx dsl/scripts/schema/check-prisma-db.ts",
+    "schema:prepare": "pnpm exec tsx dsl/scripts/schema/prepare-migration.ts",
+    "schema:generate": "pnpm exec tsx dsl/scripts/schema/generate.ts",
+    "schema:sync": "npm run schema:generate && npm run schema:prepare && npm run db:migrate",
+    "schema:init-migrations": "pnpm exec tsx dsl/scripts/schema/init-prisma-migrations.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "dsl",
+    "typescript",
+    "prisma"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/marked": "^6.0.0",
+    "@types/node": "^18.0.0",
+    "dotenv": "^16.5.0",
+    "glob": "^11.0.0",
+    "ts-node": "^10.9.1",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.7.0",
+    "arg": "^5.0.2",
+    "glob": "^11.0.0",
+    "marked": "^13.0.2",
+    "mysql2": "^3.14.1",
+    "prisma": "^6.7.0",
+    "reflect-metadata": "^0.2.2"
+  }
+}

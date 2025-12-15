@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Auth Callback</title>
+  <script>
+    // Get URL parameters from hash
+    const urlParams = new URLSearchParams(window.location.hash.substring(1));
+    // Extract id_token
+    const token = urlParams.get('id_token');
+    // If token exists, post message to opener
+    if (token) {
+      window.opener.postMessage(`id_token:${token}`, window.location.origin);
+    }
+    // Close the popup window
+    window.close();
+  </script>
+</head>
+<body>
+  <!-- This page handles the Google OAuth callback and passes the token to the opener window. -->
+</body>
+</html>

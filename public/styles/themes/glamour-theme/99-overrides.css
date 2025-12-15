@@ -1,0 +1,28 @@
+/*
+ * ⚠️  DO NOT MODIFY CLASS STRUCTURE
+ * 
+ * This is a REFERENCE theme used as template for theme generation.
+ * Changing class names or removing classes will break theme generator.
+ * 
+ * You MAY modify:
+ * - Default values (padding, colors, sizes)
+ * - Add new classes
+ * 
+ * You MUST NOT:
+ * - Rename existing classes
+ * - Remove existing classes
+ * - Change selector structure
+ */
+
+/* ==========================================================================
+   99-OVERRIDES - Theme-specific overrides
+   ========================================================================== */
+
+/* Add custom overrides here */
+
+/* Replace grid pattern with floral pattern */
+html[data-theme="glamour-theme"] body::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2780%27 height=%2780%27 viewBox=%270 0 80 80%27%3E%3Cg fill=%27%23ec4899%27 fill-opacity=%270.06%27%3E%3Cpath d=%27M40 0c2.2 0 4 6.7 4 15s-1.8 15-4 15-4-6.7-4-15S37.8 0 40 0zm0 50c2.2 0 4 6.7 4 15s-1.8 15-4 15-4-6.7-4-15 1.8-15 4-15zM15 40c0-2.2 6.7-4 15-4s15 1.8 15 4-6.7 4-15 4-15-1.8-15-4zm50 0c0-2.2 6.7-4 15-4s15 1.8 15 4-6.7 4-15 4-15-1.8-15-4z%27/%3E%3Ccircle cx=%2740%27 cy=%2740%27 r=%276%27/%3E%3Ccircle cx=%2710%27 cy=%2710%27 r=%273%27/%3E%3Ccircle cx=%2770%27 cy=%2710%27 r=%273%27/%3E%3Ccircle cx=%2710%27 cy=%2770%27 r=%273%27/%3E%3Ccircle cx=%2770%27 cy=%2770%27 r=%273%27/%3E%3Cpath d=%27M20 20c4 0 7.5 5 10 10-5-2.5-10-6-10-10zm40 0c0 4-5 7.5-10 10 2.5-5 6-10 10-10zm0 40c-4 0-7.5-5-10-10 5 2.5 10 6 10 10zm-40 0c0-4 5-7.5 10-10-2.5 5-6 10-10 10z%27/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  opacity: 1;
+}

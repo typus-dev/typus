@@ -1,0 +1,9 @@
+{
+  "name": "_reference",
+  "title": "Reference Theme (Agnostic)",
+  "description": "Template theme with all 366 classes - DO NOT USE DIRECTLY",
+  "icon": "ri:file-copy-line",
+  "type": "template",
+  "version": "1.0.0",
+  "totalClasses": 366
+}

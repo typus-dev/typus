@@ -1,0 +1,24 @@
+{
+  "name": "typus-monorepo",
+  "private": true,
+  "scripts": {
+    "dev:backend": "pnpm --filter @typus-core/backend dev",
+    "dev:frontend": "pnpm --filter @typus-core/frontend dev",
+    "build": "pnpm --recursive build",
+    "build:all": "pnpm --filter @typus-core/shared build && pnpm --filter @typus-core/backend build && pnpm --filter custom/backend build",
+    "build:dsl-schemas": "pnpm --filter @typus-core/shared run dsl:generate-prisma-schemas && pnpm --filter @data/prisma run prisma:merge",
+    "build:dsl-prisma": "pnpm --filter @typus-core/shared run dsl:generate-all && pnpm --filter @data/prisma run prisma:merge-and-generate",
+    "install:custom": "pnpm --filter '@custom/*' install"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "linkedom": "^0.16.10",
+    "@prisma/client": "^6.8.2",
+    "bcryptjs": "^3.0.2",
+    "glob": "^11.1.0",
+    "tsx": "^4.20.3",
+    "tsyringe": "^4.8.0"
+  }
+}

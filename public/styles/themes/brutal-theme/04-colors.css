@@ -1,0 +1,77 @@
+/*
+ * ⚠️  DO NOT MODIFY CLASS STRUCTURE
+ * 
+ * This is a REFERENCE theme used as template for theme generation.
+ * Changing class names or removing classes will break theme generator.
+ * 
+ * You MAY modify:
+ * - Default values (padding, colors, sizes)
+ * - Add new classes
+ * 
+ * You MUST NOT:
+ * - Rename existing classes
+ * - Remove existing classes
+ * - Change selector structure
+ */
+
+/* ==========================================================================
+   04-COLORS - Color utility classes
+   ========================================================================== */
+
+/* Text Colors */
+[data-theme="brutal-theme"] .theme-colors-text-primary { color: var(--color-text-primary); }
+[data-theme="brutal-theme"] .theme-colors-text-secondary { color: var(--color-text-secondary); }
+[data-theme="brutal-theme"] .theme-colors-text-tertiary { color: var(--color-text-tertiary); }
+[data-theme="brutal-theme"] .theme-colors-text-disabled { color: var(--color-text-disabled); }
+[data-theme="brutal-theme"] .theme-colors-text-contrast { color: var(--color-text-contrast); }
+[data-theme="brutal-theme"] .theme-colors-text-accent { color: var(--color-text-accent); }
+[data-theme="brutal-theme"] .theme-colors-text-success { color: var(--color-text-success); }
+[data-theme="brutal-theme"] .theme-colors-text-warning { color: var(--color-text-warning); }
+[data-theme="brutal-theme"] .theme-colors-text-error { color: var(--color-text-error); }
+[data-theme="brutal-theme"] .theme-colors-text-info { color: var(--color-text-info); }
+
+/* Background Colors */
+[data-theme="brutal-theme"] .theme-colors-background-primary { background-color: var(--color-bg-primary); }
+[data-theme="brutal-theme"] .theme-colors-background-secondary { background-color: var(--color-bg-secondary); }
+[data-theme="brutal-theme"] .theme-colors-background-tertiary { background-color: var(--color-bg-tertiary); }
+[data-theme="brutal-theme"] .theme-colors-background-hover { background-color: var(--color-bg-hover); }
+[data-theme="brutal-theme"] .theme-colors-background-disabled { background-color: var(--color-bg-disabled); }
+[data-theme="brutal-theme"] .theme-colors-background-accent { background-color: var(--color-bg-accent); }
+[data-theme="brutal-theme"] .theme-colors-background-accentHover { background-color: var(--color-bg-accent-hover); }
+[data-theme="brutal-theme"] .theme-colors-background-success { background-color: var(--color-bg-success); }
+[data-theme="brutal-theme"] .theme-colors-background-successHover { background-color: var(--color-bg-success-hover); }
+[data-theme="brutal-theme"] .theme-colors-background-warning { background-color: var(--color-bg-warning); }
+[data-theme="brutal-theme"] .theme-colors-background-warningHover { background-color: var(--color-bg-warning-hover); }
+[data-theme="brutal-theme"] .theme-colors-background-error { background-color: var(--color-bg-error); }
+[data-theme="brutal-theme"] .theme-colors-background-errorHover { background-color: var(--color-bg-error-hover); }
+[data-theme="brutal-theme"] .theme-colors-background-info { background-color: var(--color-bg-info); }
+[data-theme="brutal-theme"] .theme-colors-background-infoHover { background-color: var(--color-bg-info-hover); }
+
+/* Border Colors */
+[data-theme="brutal-theme"] .theme-colors-border-primary { border-color: var(--color-border-primary); }
+[data-theme="brutal-theme"] .theme-colors-border-secondary { border-color: var(--color-border-secondary); }
+[data-theme="brutal-theme"] .theme-colors-border-tertiary { border-color: var(--color-border-tertiary); }
+[data-theme="brutal-theme"] .theme-colors-border-disabled { border-color: var(--color-border-disabled); }
+[data-theme="brutal-theme"] .theme-colors-border-focus { border-color: var(--color-border-focus); }
+[data-theme="brutal-theme"] .theme-colors-border-error { border-color: var(--color-border-error); }
+[data-theme="brutal-theme"] .theme-colors-border-info { border-color: var(--color-border-info); }
+[data-theme="brutal-theme"] .theme-colors-border-success { border-color: var(--color-border-success); }
+[data-theme="brutal-theme"] .theme-colors-border-warning { border-color: var(--color-border-warning); }
+
+/* Ring Colors */
+[data-theme="brutal-theme"] .theme-colors-ring-focus { --tw-ring-color: var(--color-ring-focus); }
+[data-theme="brutal-theme"] .theme-colors-ring-error { --tw-ring-color: var(--color-ring-error); }
+[data-theme="brutal-theme"] .theme-colors-ring-offset { --tw-ring-offset-color: var(--color-ring-offset); }
+
+/* Gradients */
+[data-theme="brutal-theme"] .theme-colors-gradients-primary {
+  background-image: linear-gradient(to right, var(--color-bg-accent), var(--color-bg-info));
+}
+
+[data-theme="brutal-theme"] .theme-colors-gradients-neutral {
+  background-image: linear-gradient(to right, var(--color-bg-secondary), var(--color-bg-tertiary));
+}
+
+[data-theme="brutal-theme"] .theme-colors-gradients-hero {
+  background-image: linear-gradient(to bottom right, var(--color-bg-primary), var(--color-bg-accent), var(--color-bg-secondary));
+}

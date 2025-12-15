@@ -1,0 +1,108 @@
+.dxce-preview {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+}
+
+.dxce-preview .canvas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
+  min-height: 180px;
+  box-sizing: border-box;
+}
+
+.dxce-preview .block {
+  position: relative;
+  box-sizing: border-box;
+  padding: 8px;
+}
+
+.dxce-preview .block-item {
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.dxce-preview .inner {
+  position: relative;
+}
+
+.dxce-preview .content {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.dxce-preview .block.w-100 { flex: 0 0 100%; max-width: 100%; }
+.dxce-preview .block.w-75  { flex: 0 0 75%; max-width: 75%; }
+.dxce-preview .block.w-66  { flex: 0 0 66%; max-width: 66%; }
+.dxce-preview .block.w-50  { flex: 0 0 50%; max-width: 50%; }
+.dxce-preview .block.w-33  { flex: 0 0 33%; max-width: 33%; }
+.dxce-preview .block.w-25  { flex: 0 0 25%; max-width: 25%; }
+
+.dxce-preview .align-left { margin-right: auto; }
+.dxce-preview .align-center { margin-left: auto; margin-right: auto; }
+.dxce-preview .align-right { margin-left: auto; }
+
+.dxce-preview .text p {
+  margin: 8px 0;
+  line-height: 1.7;
+}
+
+.dxce-preview .heading h1,
+.dxce-preview .heading h2,
+.dxce-preview .heading h3 {
+  margin: 8px 0;
+}
+
+.dxce-preview .quote blockquote {
+  border-left: 3px solid #1f2937;
+  margin: 8px 0;
+  padding: 8px 12px;
+}
+
+.dxce-preview .code pre {
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  white-space: pre-wrap;
+}
+
+.dxce-preview .list ul,
+.dxce-preview .list ol {
+  padding-left: 1.2em;
+  margin: 8px 0;
+}
+
+.dxce-preview .list li {
+  margin-bottom: 0.5rem;
+}
+
+.dxce-preview .image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.dxce-preview [contenteditable="true"] {
+  pointer-events: none;
+}
+
+.dxce-preview .left-grip,
+.dxce-preview .drag-grip-tl,
+.dxce-preview .resize-handle,
+.dxce-preview .ctx {
+  display: none !important;
+}
+
+.dxce-preview .block.focused .content::after,
+.dxce-preview .block.selected .content::after {
+  display: none;
+}
+
+.dxce-preview figure {
+  margin: 0;
+}

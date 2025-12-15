@@ -1,0 +1,134 @@
+# =============================================================================
+# Stage 1: Build Frontend
+# =============================================================================
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /build
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy workspace files
+COPY pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
+
+# Copy package files
+COPY @typus-core/frontend/package.json @typus-core/frontend/
+COPY @typus-core/shared/package.json @typus-core/shared/
+
+# Install dependencies
+RUN pnpm install --no-frozen-lockfile --filter @typus-core/frontend...
+
+# Copy source code
+COPY @typus-core/frontend @typus-core/frontend
+COPY @typus-core/shared @typus-core/shared
+
+# Copy public assets (favicon, etc.)
+COPY public /build/public
+
+# Copy typus-manifest.json (needed by frontend build)
+COPY typus-manifest.json /build/typus-manifest.json
+
+# Build frontend for production
+WORKDIR /build/@typus-core/frontend
+RUN NODE_ENV=production pnpm run build
+
+# =============================================================================
+# Stage 2: Runtime - All-in-One Container (nginx + backend)
+# =============================================================================
+FROM node:20-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    nginx \
+    supervisor \
+    ca-certificates \
+    curl \
+    default-mysql-client \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install tsx globally for TypeScript execution
+RUN npm install -g tsx pnpm
+
+# Create app directory
+WORKDIR /app
+
+# Copy pnpm workspace files and root package.json
+COPY pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json package.json ./
+
+# Copy package files for dependency installation
+COPY @typus-core/backend/package.json @typus-core/backend/
+COPY @typus-core/shared/package.json @typus-core/shared/
+COPY @typus-core/frontend/package.json @typus-core/frontend/
+
+# Install backend and frontend dependencies (frontend needed for plugin rebuild)
+RUN pnpm install --no-frozen-lockfile
+
+# Copy backend SOURCE files (TypeScript, NOT compiled!)
+COPY @typus-core/backend @typus-core/backend
+COPY @typus-core/shared @typus-core/shared
+
+# Copy built frontend from Stage 1
+COPY --from=frontend-builder /build/@typus-core/frontend/dist /app/@typus-core/frontend/dist
+
+# Copy frontend source (needed for plugin rebuild)
+COPY --from=frontend-builder /build/@typus-core/frontend/src /app/@typus-core/frontend/src
+COPY --from=frontend-builder /build/@typus-core/frontend/scripts /app/@typus-core/frontend/scripts
+COPY --from=frontend-builder /build/@typus-core/frontend/package.json /app/@typus-core/frontend/package.json
+COPY --from=frontend-builder /build/@typus-core/frontend/vite.config.js /app/@typus-core/frontend/vite.config.js
+COPY --from=frontend-builder /build/@typus-core/frontend/vite.config.d.ts /app/@typus-core/frontend/vite.config.d.ts
+COPY --from=frontend-builder /build/@typus-core/frontend/tsconfig.json /app/@typus-core/frontend/tsconfig.json
+COPY --from=frontend-builder /build/@typus-core/frontend/index.html /app/@typus-core/frontend/index.html
+
+# Create plugins directory (populated via volume mount)
+RUN mkdir -p /app/plugins
+
+# Copy Prisma schemas and pre-generated client
+COPY data/prisma /app/data/prisma
+
+# Copy typus-manifest.json for migrations tracking
+COPY typus-manifest.json /app/typus-manifest.json
+
+# Copy public directory
+COPY public /app/public
+
+# Copy database seeds
+COPY data/seeds /app/data/seeds
+
+# Copy baseline SQL files for first-time setup
+COPY data/baseline /app/data/baseline
+
+# Copy nginx configuration
+COPY docker/nginx/nginx-lite.conf /etc/nginx/nginx.conf
+
+# Copy supervisord configuration
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy backend startup script (renamed from backend-startup-lite.sh in release)
+COPY @typus-core/backend/backend-startup-dev.sh /app/@typus-core/backend/backend-startup-dev.sh
+RUN chmod +x /app/@typus-core/backend/backend-startup-dev.sh
+
+# Copy plugin rebuild script
+COPY docker/rebuild-frontend.sh /app/rebuild-frontend.sh
+RUN chmod +x /app/rebuild-frontend.sh
+
+# Create required directories
+RUN mkdir -p /app/storage/cache/html \
+    /app/logs \
+    /var/log/nginx \
+    /var/log/supervisor \
+    /var/run
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3001
+
+# Expose HTTP port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost/health || exit 1
+
+# Start supervisord
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

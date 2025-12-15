@@ -1,0 +1,6 @@
+{
+  "name": "@typus/custom-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Custom modules (not used in LITE profile - stub for Dockerfile)"
+}

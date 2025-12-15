@@ -1,0 +1,8 @@
+/* ================================================================
+   MAIN STYLES - Entry point for Vite/Tailwind build
+
+   NOTE: Most styles are now in public/styles/ (pure CSS).
+   This file only contains Tailwind directives for JIT compilation.
+   ================================================================ */
+
+@import './tailwind.css';

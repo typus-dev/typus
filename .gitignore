@@ -1,0 +1,44 @@
+# Environment files (contain secrets)
+.env
+.env.local
+.env.dev
+.env.prod
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+
+# Logs
+*.log
+logs/
+
+# Source maps
+*.map
+
+# Backups and database dumps
+storage/backups/*
+!storage/backups/.gitkeep
+*.sql
+*.sql.gz
+
+# Runtime data
+storage/cache/*
+storage/html-cache/*
+storage/temp/*
+!storage/cache/.gitkeep
+!storage/html-cache/.gitkeep
+!storage/temp/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/

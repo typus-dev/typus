@@ -1,0 +1,89 @@
+version: '3.8'
+
+# LOCALHOST Development Configuration
+# Zero external dependencies - works on any laptop
+# Features: Embedded MySQL, direct port access, no Traefik required
+# Use: docker compose -f docker-compose.local.yml up -d
+# Or: ./manage.sh switch local && docker compose up -d
+# Access: http://localhost:3000
+
+services:
+  typus_lite:
+    container_name: ${COMPOSE_PROJECT_NAME:-typus}_lite
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${LOCALHOST_PORT:-3000}:80"
+    networks:
+      - typus-local
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - APP_DOMAIN=localhost
+      - APP_URL=http://localhost:${LOCALHOST_PORT:-3000}
+      # DATABASE_URL comes from .env (supports MySQL or SQLite)
+      - REDIS_ENABLED=false
+      - DISPATCHER_ENABLED=false
+      - PROJECT_PATH=/app
+      - STORAGE_PATH=/app/storage
+      - UPLOADS_PATH=/app/storage/uploads
+    volumes:
+      # Application code (no bind mounts in packaged release)
+      - ./storage:/app/storage
+      - logs:/app/logs
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  mysql:
+    image: mysql:8.0
+    container_name: ${COMPOSE_PROJECT_NAME:-typus}_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secret}
+      # Fixed database name to avoid conflicts with SQLite file paths in DB_NAME
+      MYSQL_DATABASE: typus_db
+      MYSQL_USER: ${DB_USER:-typus}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-typus_password}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # Optional: Custom MySQL configuration
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    networks:
+      - typus-local
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_secret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+
+networks:
+  typus-local:
+    driver: bridge
+    name: ${COMPOSE_PROJECT_NAME:-typus}_local_network
+
+volumes:
+  mysql-data:
+    name: ${COMPOSE_PROJECT_NAME:-typus}_mysql_data
+  logs:
+    name: ${COMPOSE_PROJECT_NAME:-typus}_logs
+  nginx-logs:
+    name: ${COMPOSE_PROJECT_NAME:-typus}_nginx_logs

@@ -1,0 +1,28 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "baseUrl": ".",
+    "paths": {
+      "@typus-core/shared/*": ["@typus-core/shared/*"],
+      "@custom/*": ["custom/*"]
+    },
+    "esModuleInterop": true,
+    "strict": true,
+    "noEmit": true,
+    "rootDir": ".",
+    "types": ["node", "marked"],
+    "lib": ["ES2022", "DOM"]
+  },
+  "include": [
+    "./index.ts",
+    "./dsl/**/*.ts",
+    "./dxce/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

@@ -1,0 +1,114 @@
+/*
+ * ⚠️  DO NOT MODIFY CLASS STRUCTURE
+ * 
+ * This is a REFERENCE theme used as template for theme generation.
+ * Changing class names or removing classes will break theme generator.
+ * 
+ * You MAY modify:
+ * - Default values (padding, colors, sizes)
+ * - Add new classes
+ * 
+ * You MUST NOT:
+ * - Rename existing classes
+ * - Remove existing classes
+ * - Change selector structure
+ */
+
+/* ==========================================================================
+   02-TYPOGRAPHY - Font styles
+   ========================================================================== */
+
+/* Base font size on html - all rem units scale from this */
+[data-theme="dark-theme"] html,
+html[data-theme="dark-theme"] {
+  font-size: var(--font-size-base, 1rem);
+  line-height: var(--line-height-base, 1.5);
+}
+
+/* Font Family */
+[data-theme="dark-theme"] .theme-typography-fontFamily-base {
+  font-family: var(--font-family-base);
+}
+
+[data-theme="dark-theme"] .theme-typography-fontFamily-heading {
+  font-family: var(--font-family-heading);
+}
+
+[data-theme="dark-theme"] .theme-typography-fontFamily-display {
+  font-family: var(--font-family-heading);
+}
+
+[data-theme="dark-theme"] .theme-typography-fontFamily-mono {
+  font-family: var(--font-family-mono);
+}
+
+/* Font Size */
+[data-theme="dark-theme"] .theme-typography-size-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+[data-theme="dark-theme"] .theme-typography-size-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+[data-theme="dark-theme"] .theme-typography-size-md {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+[data-theme="dark-theme"] .theme-typography-size-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+[data-theme="dark-theme"] .theme-typography-size-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+[data-theme="dark-theme"] .theme-typography-size-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+[data-theme="dark-theme"] .theme-typography-size-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+[data-theme="dark-theme"] .theme-typography-size-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+/* Font Weight */
+[data-theme="dark-theme"] .theme-typography-weight-normal {
+  font-weight: 400;
+}
+
+[data-theme="dark-theme"] .theme-typography-weight-medium {
+  font-weight: 500;
+}
+
+[data-theme="dark-theme"] .theme-typography-weight-semibold {
+  font-weight: 600;
+}
+
+[data-theme="dark-theme"] .theme-typography-weight-bold {
+  font-weight: 700;
+}
+
+/* Line Height & Letter Spacing */
+[data-theme="dark-theme"] .theme-typography-lineHeight {
+  line-height: 1.75;
+}
+
+[data-theme="dark-theme"] .theme-typography-letterSpacing {
+  letter-spacing: 0;
+}
+
+[data-theme="dark-theme"] .theme-typography-color {
+  color: var(--color-text-primary);
+}

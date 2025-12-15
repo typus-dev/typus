@@ -1,0 +1,53 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node16",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@typus-core/backend/*": ["./src/*"],
+      "@typus-core/shared/*": ["../shared/*"],
+      "@custom/*": ["../../custom/*"],
+      "@prisma/client": ["../../generated/client"]
+    },
+    "outDir": "./dist",
+    "rootDir": ".",
+    "isolatedModules": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "allowImportingTsExtensions": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noEmit": false,
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "jest", "jsonwebtoken", "@prisma/client", "./globals.d.ts", "./src/types/express.d.ts"],
+    "noImplicitAny": false,
+    "strictPropertyInitialization": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "strictBindCallApply": false
+  },
+  "tsc-alias": {
+    "resolveFullPaths": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "globals.d.ts",
+    "server.ts",
+    "__tests__/**/*.ts",
+    "../custom/backend/**/*.ts",
+    "../shared/**/*.ts",
+    "../../plugins/**/backend/**/*.ts",
+    "../../plugins/**/workers/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

@@ -1,0 +1,120 @@
+/* Shared content styles (theme-agnostic, rely on CSS variables) */
+.content-container {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+}
+
+.heading {
+  margin: 1.5rem 0 1rem 0;
+}
+
+.theme-content-link {
+  color: var(--color-accent-text);
+  text-decoration: underline;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.theme-content-link:hover,
+.theme-content-link:focus-visible {
+  opacity: 0.85;
+}
+
+.image-block {
+  margin: 2rem 0;
+}
+
+.image-block img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+}
+
+
+.heading-xl h1,
+.heading-xl h2,
+.heading-xl h3 {
+  font-size: 2.25rem !important;
+}
+
+.heading-lg h1,
+.heading-lg h2,
+.heading-lg h3 {
+  font-size: 1.875rem !important;
+}
+
+.heading-md h1,
+.heading-md h2,
+.heading-md h3 {
+  font-size: 1.5rem !important;
+}
+
+.heading-sm h1,
+.heading-sm h2,
+.heading-sm h3 {
+  font-size: 1.25rem !important;
+}
+
+.content-width-full {
+  width: 100%;
+}
+
+.content-width-wide {
+  width: 80%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.content-width-narrow {
+  width: 65ch;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Theme switcher dropdown helpers */
+.theme-switcher-menu {
+  top: 3.5rem;
+}
+
+.theme-switcher-menu button {
+  background-color: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.theme-switcher-menu button:hover,
+.theme-switcher-menu button:focus-visible {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+/* Button primitives (shared across SPA + static) */
+.theme-components-button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs, 0.375rem);
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  text-decoration: none;
+}
+
+.theme-components-button-radius {
+  border-radius: var(--radius-md, 0.5rem);
+}
+
+.theme-components-button-minWidth {
+  min-width: 5rem;
+}
+
+.theme-components-button-size-md {
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.theme-components-button-spacing-md {
+  padding: 0.6rem 1.25rem;
+}
+
+/* Button variants are now defined in theme files (06-components.css) */

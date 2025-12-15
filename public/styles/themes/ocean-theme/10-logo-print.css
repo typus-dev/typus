@@ -1,0 +1,38 @@
+/*
+ * ⚠️  DO NOT MODIFY CLASS STRUCTURE
+ * 
+ * This is a REFERENCE theme used as template for theme generation.
+ * Changing class names or removing classes will break theme generator.
+ * 
+ * You MAY modify:
+ * - Default values (padding, colors, sizes)
+ * - Add new classes
+ * 
+ * You MUST NOT:
+ * - Rename existing classes
+ * - Remove existing classes
+ * - Change selector structure
+ */
+
+/* ==========================================================================
+   10-LOGO & PRINT
+   ========================================================================== */
+
+/* Logo */
+[data-theme="ocean-theme"] .theme-logo-background {
+  background-image: linear-gradient(to right, var(--color-bg-accent), var(--color-bg-info));
+}
+
+[data-theme="ocean-theme"] .theme-logo-text {
+  background-image: linear-gradient(to right, var(--color-text-accent), var(--color-text-info));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Print */
+[data-theme="ocean-theme"] .theme-print-pageBreak { page-break-inside: avoid; }
+[data-theme="ocean-theme"] .theme-print-color-text { color: #000000; }
+[data-theme="ocean-theme"] .theme-print-color-background { background-color: #ffffff; }
+[data-theme="ocean-theme"] .theme-print-margin { margin: 1rem; }
+[data-theme="ocean-theme"] .theme-print-fontFamily { font-family: var(--font-family-base); }

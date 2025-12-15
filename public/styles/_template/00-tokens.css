@@ -1,0 +1,195 @@
+/*
+ * ⚠️  DO NOT MODIFY CLASS STRUCTURE
+ * 
+ * This is a REFERENCE theme used as template for theme generation.
+ * Changing class names or removing classes will break theme generator.
+ * 
+ * You MAY modify:
+ * - Default values (padding, colors, sizes)
+ * - Add new classes
+ * 
+ * You MUST NOT:
+ * - Rename existing classes
+ * - Remove existing classes
+ * - Change selector structure
+ */
+
+/* ==========================================================================
+   00-TOKENS - CSS Custom Properties (Design Tokens)
+
+   AGNOSTIC REFERENCE THEME - Template for all 366 classes
+   Replace /* VALUE */ with actual values when creating a theme
+   ========================================================================== */
+
+[data-theme="_template"] {
+  /* ==========================================================================
+     COLORS - TEXT
+     ========================================================================== */
+  --color-text-primary: /* VALUE */;
+  --color-text-secondary: /* VALUE */;
+  --color-text-tertiary: /* VALUE */;
+  --color-text-disabled: /* VALUE */;
+  --color-text-contrast: /* VALUE */;
+  --color-text-accent: /* VALUE */;
+  --color-text-success: /* VALUE */;
+  --color-text-warning: /* VALUE */;
+  --color-text-error: /* VALUE */;
+  --color-text-info: /* VALUE */;
+
+  /* ==========================================================================
+     COLORS - BACKGROUND
+     ========================================================================== */
+  --color-bg-primary: /* VALUE */;
+  --color-bg-secondary: /* VALUE */;
+  --color-bg-tertiary: /* VALUE */;
+  --color-bg-surface: /* VALUE */;
+  --color-bg-hover: /* VALUE */;
+  --color-bg-disabled: /* VALUE */;
+  --color-bg-accent: /* VALUE */;
+  --color-bg-accent-hover: /* VALUE */;
+  --color-bg-success: /* VALUE */;
+  --color-bg-success-hover: /* VALUE */;
+  --color-bg-warning: /* VALUE */;
+  --color-bg-warning-hover: /* VALUE */;
+  --color-bg-error: /* VALUE */;
+  --color-bg-error-hover: /* VALUE */;
+  --color-bg-info: /* VALUE */;
+  --color-bg-info-hover: /* VALUE */;
+
+  /* ==========================================================================
+     COLORS - BORDER
+     ========================================================================== */
+  --color-border-primary: /* VALUE */;
+  --color-border-secondary: /* VALUE */;
+  --color-border-tertiary: /* VALUE */;
+  --color-border-disabled: /* VALUE */;
+  --color-border-focus: /* VALUE */;
+  --color-border-error: /* VALUE */;
+  --color-border-info: /* VALUE */;
+  --color-border-success: /* VALUE */;
+  --color-border-warning: /* VALUE */;
+
+  /* ==========================================================================
+     COLORS - RING
+     ========================================================================== */
+  --color-ring-focus: /* VALUE */;
+  --color-ring-error: /* VALUE */;
+  --color-ring-offset: /* VALUE */;
+
+  /* ==========================================================================
+     COLORS - ACCENT (theme-specific)
+     ========================================================================== */
+  --color-accent-primary: /* VALUE */;
+  --color-accent-secondary: /* VALUE */;
+
+  /* ==========================================================================
+     COLORS - OVERLAY
+     ========================================================================== */
+  --color-overlay: rgba(0, 0, 0, 0.5);
+
+  /* ==========================================================================
+     SPACING
+     ========================================================================== */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  --spacing-4xl: 6rem;
+  --spacing-5xl: 8rem;
+
+  /* ==========================================================================
+     BORDER RADIUS
+     ========================================================================== */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* ==========================================================================
+     SHADOWS
+     ========================================================================== */
+  --shadow-sm: /* VALUE */;
+  --shadow-md: /* VALUE */;
+  --shadow-lg: /* VALUE */;
+  --shadow-xl: /* VALUE */;
+
+  /* ==========================================================================
+     TYPOGRAPHY
+     ========================================================================== */
+  --font-family-base: ui-sans-serif, system-ui, sans-serif;
+  --font-family-heading: ui-sans-serif, system-ui, sans-serif;
+  --font-family-mono: ui-monospace, monospace;
+
+  /* ==========================================================================
+     TRANSITIONS
+     ========================================================================== */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ==========================================================================
+     GRADIENT FILLS
+     ========================================================================== */
+  --button-primary-fill: /* VALUE */;
+  --button-secondary-fill: /* VALUE */;
+  --button-gradient-active: /* VALUE */; /* 0 or 1 */
+  --card-surface-fill: /* VALUE */;
+  --card-gradient-active: /* VALUE */; /* 0 or 1 */
+  --app-background-fill: /* VALUE */;
+  --app-background-gradient-active: /* VALUE */; /* 0 or 1 */
+  --button-gradient-intensity: /* VALUE */; /* 0..1 */
+  --card-gradient-intensity: /* VALUE */; /* 0..1 */
+  --button-gloss-gradient: /* VALUE */;
+  --button-gloss-opacity: /* VALUE */;
+  --button-gloss-hover-opacity: /* VALUE */;
+  --button-gloss-active-opacity: /* VALUE */;
+  --button-gloss-enabled: /* VALUE */; /* 0 or 1 */
+
+  /* ==========================================================================
+     GLASSMORPHISM - Computed CSS values
+     These are generated by ThemeGeneratorService.computeGlassmorphismTokens()
+     ========================================================================== */
+  --glass-blur: 0px;
+  --glass-opacity: 1;
+  --glass-gradient: none;  /* radial-gradient(...) when enabled */
+  --glass-gradient-strength: 0;  /* raw 0-1 value for reference */
+  --glass-border: rgba(255, 255, 255, 0.1);  /* computed rgba color */
+  --glass-shadow: none;  /* 0 Xpx Ypx rgba(...) when enabled */
+  --glass-card-overlay: none;  /* linear-gradient(...) when enabled */
+  --card-backdrop: none;  /* blur(Xpx) when enabled */
+  --card-bg-opacity: 1;
+  --glow-intensity: 0;
+  --glass-apply-to-cards: 0;
+  --glass-apply-to-shell: 0;
+  --color-bg-secondary-glass: /* VALUE */;  /* rgba with glass opacity */
+  --color-bg-primary-glass: /* VALUE */;  /* rgba with glass opacity */
+
+  /* ==========================================================================
+     EFFECTS - Flags (0 = disabled, 1 = enabled)
+     ========================================================================== */
+  --effect-neon: 0;
+  --effect-shimmer: 0;
+  --effect-tilt: 0;
+  --effect-magnetic: 0;
+  --effect-glow-badges: 0;
+  --effect-neon-scrollbar: 0;
+  --effect-link-glow: 0;
+  --effect-table-glow: 0;
+  --effect-progress-glow: 0;
+  --effect-input-glow: 0;
+  --effect-modal-glass: 0;
+  --effect-dropdown-glass: 0;
+  --effect-checkbox-glow: 0;
+  --effect-heading-glow: 0;
+  --effect-button-glow: 0;
+
+  /* ==========================================================================
+     EFFECTS - Colors
+     ========================================================================== */
+  --neon-primary: rgba(96, 165, 250, 0.5);
+  --neon-secondary: rgba(167, 139, 250, 0.5);
+}

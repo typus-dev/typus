@@ -1,0 +1,181 @@
+/* 00 - Tokens: CSS custom properties for dark-theme */
+[data-theme="dark-theme"] {
+  /* Text colors */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.65);
+  --color-text-tertiary: rgba(255, 255, 255, 0.65);
+  --color-text-disabled: rgba(255, 255, 255, 0.65);
+  --color-text-contrast: #000000;
+  --color-text-accent: #f5f5f5;
+  --color-text-on-accent: #0f172a;
+  --color-text-success: #8cd98c;
+  --color-text-on-success: #ffffff;
+  --color-text-warning: #d9c68c;
+  --color-text-error: #d98ca6;
+  --color-text-info: #d98c8c;
+
+  /* Background colors */
+  --color-bg-primary: #0f0f0f;
+  --color-bg-secondary: #212121;
+  --color-bg-tertiary: #272727;
+  --color-bg-surface: #212121;
+  --color-bg-hover: rgba(255, 255, 255, 0.05);
+  --color-bg-disabled: #272727;
+
+  /* Accent backgrounds */
+  --color-bg-accent: rgba(245, 245, 245, 0.10);
+  --color-bg-accent-solid: #2a2a2a;
+  --color-bg-accent-light: rgba(245, 245, 245, 0.10);
+  --color-bg-accent-hover: #f6f6f6;
+  --color-bg-accent-glow: rgba(245, 245, 245, 0.15);
+
+  /* Semantic backgrounds */
+  --color-bg-success: #8cd98c;
+  --color-bg-success-light: #8cd98c;
+  --color-bg-success-hover: #98dd98;
+  --color-bg-warning: #d9c68c;
+  --color-bg-warning-light: #d9c68c;
+  --color-bg-warning-hover: #ddcc98;
+  --color-bg-error: #d98ca6;
+  --color-bg-error-light: #d98ca6;
+  --color-bg-error-hover: #dd98af;
+  --color-bg-info: #d98c8c;
+  --color-bg-info-light: #d98c8c;
+  --color-bg-info-hover: #dd9898;
+
+  /* Border colors */
+  --color-border-primary: rgba(163, 163, 163, 0.12);
+  --color-border-secondary: rgba(130, 130, 130, 0.12);
+  --color-border-tertiary: rgba(98, 98, 98, 0.12);
+  --color-border-disabled: rgba(114, 114, 114, 0.12);
+  --color-border-focus: rgba(163, 163, 163, 0.12);
+  --color-border-error: #d98ca6;
+  --color-border-info: #d98c8c;
+  --color-border-success: #8cd98c;
+  --color-border-warning: #d9c68c;
+
+  /* Ring colors */
+  --color-ring-focus: rgba(245, 245, 245, 0.5);
+  --color-ring-error: rgba(217, 140, 166, 0.5);
+  --color-ring-offset: #0f0f0f;
+
+  /* Accent colors */
+  --color-accent-primary: #f5f5f5;
+  --color-accent-secondary: #f7f7f7;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Component spacing */
+  --input-padding: 0.5rem 0.75rem;
+  --button-padding: 0.625rem 1rem;
+  --card-padding: 1.5rem;
+
+  /* Border radius */
+  --radius-sm: calc(0.125rem * 0.5);
+  --radius-md: 0.125rem;
+  --radius-lg: calc(0.125rem * 1.5);
+  --radius-xl: calc(0.125rem * 2);
+  --radius-full: 9999px;
+  --radius-button: 0.125rem;
+  --radius-card: 0.5rem;
+
+  /* Shadows */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-accent: 0 4px 20px rgba(245, 245, 245, 0.15);
+
+  /* Typography */
+  --font-family-base: 'Sora', 'Inter', system-ui, sans-serif;
+  --font-family-heading: 'Sora', 'Inter', system-ui, sans-serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+  --font-size-base: 1rem;
+  --line-height-base: 1.5;
+  --font-weight-heading: 600;
+
+  /* Component settings */
+  --focus-ring-width: 2px;
+  --card-border-width: 1px;
+  --input-border-width: 1px;
+  --component-outline-text: #f8fafc;
+  --component-outline-bg: #313131;
+  --component-outline-border: #b7b7b7;
+  --component-outline-hover-bg: #444444;
+  --component-outline-hover-border: #d1d1d1;
+  --component-checkbox-border: #9f9f9f;
+  --component-checkbox-border-checked: #ffffff;
+  --component-checkbox-fill: #3a3a3a;
+  --component-checkbox-fill-checked: #ffffff;
+  --component-input-background: #2c2c2c;
+  --component-input-border: #b7b7b7;
+
+  /* Transitions */
+  --transition-fast: 150 cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Interaction effects */
+  --hover-scale: 1;
+  --hover-brightness: 1;
+  --hover-translate-y: 0;
+
+  /* Gradient controls */
+  --button-primary-fill: #2a2a2a;
+  --button-secondary-fill: #212121;
+  --button-gradient-active: 0;
+  --card-surface-fill: linear-gradient(132deg, rgba(111, 111, 111, 0.4), #1c1c1c);
+  --card-gradient-active: 1;
+  --app-background-fill: radial-gradient(circle at 18% 22%, rgba(239, 241, 244, 0.25), transparent 60%);
+  --app-background-gradient-active: 1;
+  --button-gradient-intensity: 0.4;
+  --card-gradient-intensity: 0.4;
+  --button-gloss-gradient: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.45), transparent 55%), radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.15), transparent 65%), linear-gradient(135deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.05));
+  --button-gloss-opacity: 0.15;
+  --button-gloss-hover-opacity: 0.25;
+  --button-gloss-active-opacity: 0.1;
+  --button-gloss-enabled: 1;
+
+  /* Glassmorphism - computed CSS values */
+  --glass-blur: 0px;
+  --glass-opacity: 1;
+  --glass-gradient: none;
+  --glass-gradient-strength: 0;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: none;
+  --glass-card-overlay: linear-gradient(150deg, rgba(53, 53, 53, 0.08), rgba(73, 73, 73, 0.02));
+  --card-backdrop: none;
+  --card-bg-opacity: 1;
+  --glow-intensity: 0;
+  --glass-apply-to-cards: 1;
+  --glass-apply-to-shell: 1;
+  --color-bg-secondary-glass: rgba(33, 33, 33, 1);
+  --color-bg-primary-glass: rgba(15, 15, 15, 1);
+
+  /* Effect flags (0 = disabled, 1 = enabled) */
+  --effect-neon: 0;
+  --effect-shimmer: 0;
+  --effect-tilt: 0;
+  --effect-magnetic: 0;
+  --effect-glow-badges: 0;
+  --effect-neon-scrollbar: 0;
+  --effect-link-glow: 0;
+  --effect-table-glow: 0;
+  --effect-progress-glow: 0;
+  --effect-input-glow: 0;
+  --effect-modal-glass: 0;
+  --effect-dropdown-glass: 0;
+  --effect-checkbox-glow: 0;
+  --effect-heading-glow: 0;
+  --effect-button-glow: 0;
+
+  /* Effect colors */
+  --neon-primary: #60a5fa;
+  --neon-secondary: rgba(167, 139, 250, 0.5);
+}

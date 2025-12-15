@@ -1,0 +1,11 @@
+{
+  "name": "light-theme",
+  "title": "Light",
+  "type": "light",
+  "icon": "ri:brush-line",
+  "version": "1.0.0",
+  "description": "Generated theme: light-theme",
+  "author": "Theme Editor",
+  "generated": "2025-11-25T06:12:28.161Z",
+    "default": true
+}

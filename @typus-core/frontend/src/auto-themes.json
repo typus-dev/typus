@@ -1,0 +1,50 @@
+[
+  {
+    "name": "light-theme",
+    "title": "Light",
+    "icon": "ri:brush-line",
+    "type": "light",
+    "description": "Generated theme: light-theme",
+    "default": true
+  },
+  {
+    "name": "ocean-theme",
+    "title": "Ocean",
+    "icon": "ri:brush-line",
+    "type": "dark",
+    "description": "Generated theme: ocean-theme",
+    "default": false
+  },
+  {
+    "name": "glamour-theme",
+    "title": "Glamour",
+    "icon": "ri:brush-line",
+    "type": "light",
+    "description": "Generated theme: glamour-theme",
+    "default": false
+  },
+  {
+    "name": "dark-theme",
+    "title": "Dark",
+    "icon": "ri:brush-line",
+    "type": "dark",
+    "description": "Generated theme: dark-theme",
+    "default": false
+  },
+  {
+    "name": "cloud-theme",
+    "title": "Cloud",
+    "icon": "ri:cloud-line",
+    "type": "light",
+    "description": "Light blue minimalism",
+    "default": false
+  },
+  {
+    "name": "brutal-theme",
+    "title": "Brutal",
+    "icon": "ri:brush-line",
+    "type": "dark",
+    "description": "Generated theme: brutal-theme",
+    "default": false
+  }
+]

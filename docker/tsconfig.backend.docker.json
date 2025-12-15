@@ -1,0 +1,59 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": "..",
+    "paths": {
+      "@/*": ["@typus-core/backend/src/*"],
+      "@typus-core/backend/*": ["@typus-core/backend/src/*"],
+      "@typus-core/shared/*": ["@typus-core/shared/*"],
+      "@custom/*": ["custom/*"],
+      "@prisma/client": ["generated/client"]
+    },
+    "outDir": "@typus-core/backend/dist",
+    "rootDir": ".",
+    "isolatedModules": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "allowImportingTsExtensions": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noEmit": false,
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    "noImplicitAny": false,
+    "strictPropertyInitialization": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "strictBindCallApply": false
+  },
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "baseUrl": "..",
+    "paths": {
+      "@/*": ["@typus-core/backend/src/*"],
+      "@typus-core/backend/*": ["@typus-core/backend/src/*"],
+      "@typus-core/shared/*": ["@typus-core/shared/*"],
+      "@custom/*": ["custom/*"],
+      "@prisma/client": ["generated/client"]
+    }
+  },
+  "include": [
+    "@typus-core/backend/src/**/*.ts",
+    "@typus-core/backend/globals.d.ts",
+    "@typus-core/backend/server.ts",
+    "@typus-core/backend/__tests__/**/*.ts",
+    "custom/backend/**/*.ts",
+    "@typus-core/shared/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "@typus-core/backend/dist"
+  ]
+}

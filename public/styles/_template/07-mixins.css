@@ -1,0 +1,137 @@
+/*
+ * ⚠️  DO NOT MODIFY CLASS STRUCTURE
+ * 
+ * This is a REFERENCE theme used as template for theme generation.
+ * Changing class names or removing classes will break theme generator.
+ * 
+ * You MAY modify:
+ * - Default values (padding, colors, sizes)
+ * - Add new classes
+ * 
+ * You MUST NOT:
+ * - Rename existing classes
+ * - Remove existing classes
+ * - Change selector structure
+ */
+
+/* ==========================================================================
+   07-MIXINS - Reusable patterns
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   SURFACES
+   -------------------------------------------------------------------------- */
+[data-theme="_template"] .theme-mixins-surface {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+[data-theme="_template"] .theme-mixins-container {
+  background-color: var(--color-bg-primary);
+}
+
+[data-theme="_template"] .theme-mixins-glass {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+}
+
+[data-theme="_template"] .theme-mixins-gridPattern {
+  background-color: var(--color-bg-primary);
+  background-image:
+    linear-gradient(rgba(128, 128, 128, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(128, 128, 128, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* --------------------------------------------------------------------------
+   INTERACTIVE
+   -------------------------------------------------------------------------- */
+[data-theme="_template"] .theme-mixins-interactive {
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+[data-theme="_template"] .theme-mixins-interactive:hover {
+  transform: scale(var(--hover-scale)) translateY(var(--hover-translate-y));
+}
+
+[data-theme="_template"] .theme-mixins-interactive:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-ring-focus);
+}
+
+[data-theme="_template"] .theme-mixins-interactive:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[data-theme="_template"] .theme-mixins-interactive:active {
+  transform: scale(0.98);
+}
+
+/* --------------------------------------------------------------------------
+   NAVIGATION - Critical for menu display
+   -------------------------------------------------------------------------- */
+[data-theme="_template"] .theme-mixins-navigation-spacing > * + * {
+  margin-top: var(--spacing-sm);
+}
+
+[data-theme="_template"] .theme-mixins-navigation-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+}
+
+[data-theme="_template"] .theme-mixins-navigation-link:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+  transform: scale(var(--hover-scale)) translateY(var(--hover-translate-y));
+  filter: brightness(var(--hover-brightness));
+}
+
+[data-theme="_template"] .theme-mixins-navigation-link[aria-current="page"] {
+  background-color: var(--color-bg-accent);
+  color: var(--color-text-accent);
+}
+
+/* --------------------------------------------------------------------------
+   TEXT & INPUT
+   -------------------------------------------------------------------------- */
+[data-theme="_template"] .theme-mixins-input {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-secondary);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  transition: all var(--transition-fast);
+}
+
+[data-theme="_template"] .theme-mixins-input:hover {
+  border-color: var(--color-border-primary);
+  filter: brightness(var(--hover-brightness));
+}
+
+[data-theme="_template"] .theme-mixins-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-ring-focus);
+  border-color: var(--color-border-focus);
+}
+
+[data-theme="_template"] .theme-mixins-text {
+  font-weight: 400;
+  line-height: 1.75;
+  letter-spacing: 0;
+}
+
+[data-theme="_template"] .theme-mixins-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-secondary) var(--color-bg-secondary);
+}

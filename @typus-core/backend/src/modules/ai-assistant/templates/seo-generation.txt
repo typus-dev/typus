@@ -1,0 +1,23 @@
+Analyze the following content and generate SEO metadata in English language:
+
+Title: {title}
+Content: {content}
+URL: {sitePath}
+
+Generate a JSON response with the following fields:
+- metaTitle: SEO-optimized title (max 60 characters, engaging and keyword-rich)
+- metaDescription: Compelling description (max 160 characters, includes call-to-action)
+- metaKeywords: 5-8 relevant keywords in English, comma-separated
+- ogTitle: Social media optimized title (can be same as metaTitle or slightly different)
+- ogDescription: Social media description (can be same as metaDescription or optimized for sharing)
+
+Requirements:
+- Use English language for all fields
+- Focus on primary keywords from the content
+- Optimize for user intent and search behavior
+- Make titles and descriptions compelling for click-through rate
+- Ensure keywords are relevant and naturally extracted from content
+- Keep within character limits
+- Make content engaging and professional
+
+Return ONLY valid JSON without any additional text or formatting:

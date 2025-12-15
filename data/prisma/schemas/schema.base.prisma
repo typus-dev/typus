@@ -1,0 +1,30 @@
+datasource db {
+ provider = "mysql"
+ url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output = "../generated/client"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "debian-openssl-1.1.x", "linux-musl-openssl-3.0.x"]
+}
+
+
+model PrismaMigration {
+ id String @id @default(uuid())
+ checksum String
+ finishedAt DateTime? @map("finished_at")
+ migrationName String @map("migration_name")
+ logs String?
+ rolledBackAt DateTime? @map("rolled_back_at")
+ startedAt DateTime @default(now()) @map("started_at")
+ appliedStepsCount Int @default(0) @map("applied_steps_count")
+
+ createdAt DateTime @default(now()) @map("created_at")
+ updatedAt DateTime @updatedAt @map("updated_at")
+ createdBy Int? @map("created_by")
+ updatedBy Int? @map("updated_by")
+
+ @@map("_prisma_migrations")
+}
+

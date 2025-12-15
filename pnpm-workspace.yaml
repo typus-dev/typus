@@ -1,0 +1,5 @@
+packages:
+  - '@typus-core/*'
+  - 'custom/*'
+  - 'data/prisma'
+  - 'plugins/*'

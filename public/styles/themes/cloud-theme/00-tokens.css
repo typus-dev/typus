@@ -1,0 +1,184 @@
+/* 00 - Tokens: CSS custom properties for cloud */
+[data-theme="cloud-theme"] {
+  /* Text colors */
+  --color-text-primary: #0f1419;
+  --color-text-secondary: #536471;
+  --color-text-tertiary: #323c44;
+  --color-text-disabled: #2a3239;
+  --color-text-contrast: #ffffff;
+  --color-text-accent: #1d9bf0;
+  --color-text-on-accent: #ffffff;
+  --color-text-success: #22c55e;
+  --color-text-on-success: #ffffff;
+  --color-text-warning: #f59e0b;
+  --color-text-error: #ef4444;
+  --color-text-info: #3b82f6;
+
+  /* Background colors */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f7f9fa;
+  --color-bg-tertiary: #f0f2f3;
+  --color-bg-surface: #f7f9fa;
+  --color-bg-hover: #ebedee;
+  --color-bg-disabled: #dee0e1;
+
+  /* Accent backgrounds */
+  --color-bg-accent: #e8f5fd;
+  --color-bg-accent-solid: #1d9bf0;
+  --color-bg-accent-light: #e8f5fd;
+  --color-bg-accent-hover: #1a8cd8;
+  --color-bg-accent-glow: rgba(29, 155, 240, 0.15);
+
+  /* Semantic backgrounds */
+  --color-bg-success: #22c55e;
+  --color-bg-success-light: #e9f9ef;
+  --color-bg-success-hover: #1fb155;
+  --color-bg-warning: #f59e0b;
+  --color-bg-warning-light: #fef5e7;
+  --color-bg-warning-hover: #dd8e0a;
+  --color-bg-error: #ef4444;
+  --color-bg-error-light: #fdecec;
+  --color-bg-error-hover: #d73d3d;
+  --color-bg-info: #3b82f6;
+  --color-bg-info-light: #ebf3fe;
+  --color-bg-info-hover: #3575dd;
+
+  /* Border colors */
+  --color-border-primary: #eff3f4;
+  --color-border-secondary: #e1e8ed;
+  --color-border-tertiary: #f7f9fa;
+  --color-border-disabled: #f5f8f8;
+  --color-border-focus: #eff3f4;
+  --color-border-error: #ef4444;
+  --color-border-info: #3b82f6;
+  --color-border-success: #22c55e;
+  --color-border-warning: #f59e0b;
+
+  /* Ring colors */
+  --color-ring-focus: rgba(29, 155, 240, 0.5);
+  --color-ring-error: rgba(239, 68, 68, 0.5);
+  --color-ring-offset: #ffffff;
+
+  /* Accent colors */
+  --color-accent-primary: #1d9bf0;
+  --color-accent-secondary: #1a8cd8;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1.25rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  --spacing-4xl: 6rem;
+  --spacing-5xl: 8rem;
+
+  /* Component spacing */
+  --input-padding: 0.875rem 1.25rem;
+  --button-padding: 1rem 2rem;
+  --card-padding: 2rem;
+
+  /* Border radius */
+  --radius-sm: calc(1rem * 0.5);
+  --radius-md: 1rem;
+  --radius-lg: calc(1rem * 1.5);
+  --radius-xl: calc(1rem * 2);
+  --radius-full: 9999px;
+  --radius-button: 9999px;
+  --radius-card: 1.5rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: none;
+  --shadow-accent: 0 4px 20px rgba(29, 155, 240, 0.15);
+
+  /* Typography */
+  --font-family-base: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-heading: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+  --font-size-base: 1.125rem;
+  --line-height-base: 1.5;
+  --font-weight-heading: 700;
+
+  /* Component settings */
+  --focus-ring-width: 2px;
+  --card-border-width: 1px;
+  --input-border-width: 1px;
+  --component-outline-text: #0f1419;
+  --component-outline-bg: #f7f9fa;
+  --component-outline-border: #eff3f4;
+  --component-outline-hover-bg: #e8f5fd;
+  --component-outline-hover-border: #1d9bf0;
+  --component-checkbox-border: #e1e8ed;
+  --component-checkbox-border-checked: #1d9bf0;
+  --component-checkbox-fill: transparent;
+  --component-checkbox-fill-checked: #1d9bf0;
+  --component-input-background: #f7f9fa;
+  --component-input-border: #e1e8ed;
+
+  /* Transitions */
+  --transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Interaction effects */
+  --hover-scale: 1;
+  --hover-brightness: 1;
+  --hover-translate-y: 0;
+
+  /* Gradient controls */
+  --button-primary-fill: #1d9bf0;
+  --button-secondary-fill: #f7f9fa;
+  --button-gradient-active: 0;
+  --card-surface-fill: #f7f9fa;
+  --card-gradient-active: 0;
+  --app-background-fill: #ffffff;
+  --app-background-gradient-active: 0;
+  --button-gradient-intensity: 1;
+  --card-gradient-intensity: 1;
+  --button-gloss-gradient: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.45), transparent 55%), radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.15), transparent 65%), linear-gradient(135deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.05));
+  --button-gloss-opacity: 0.35;
+  --button-gloss-hover-opacity: 0.55;
+  --button-gloss-active-opacity: 0.25;
+  --button-gloss-enabled: 1;
+
+  /* Glassmorphism - computed CSS values */
+  --glass-blur: 0px;
+  --glass-opacity: 1;
+  --glass-gradient: none;
+  --glass-gradient-strength: 0;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: none;
+  --glass-card-overlay: linear-gradient(150deg, rgba(267, 269, 270, 0.08), rgba(287, 289, 290, 0.02));
+  --card-backdrop: none;
+  --card-bg-opacity: 1;
+  --glow-intensity: 0;
+  --glass-apply-to-cards: 0;
+  --glass-apply-to-shell: 0;
+  --color-bg-secondary-glass: rgba(247, 249, 250, 1);
+  --color-bg-primary-glass: rgba(255, 255, 255, 1);
+
+  /* Effect flags (0 = disabled, 1 = enabled) */
+  --effect-neon: 0;
+  --effect-shimmer: 0;
+  --effect-tilt: 0;
+  --effect-magnetic: 0;
+  --effect-glow-badges: 0;
+  --effect-neon-scrollbar: 0;
+  --effect-link-glow: 0;
+  --effect-table-glow: 0;
+  --effect-progress-glow: 0;
+  --effect-input-glow: 0;
+  --effect-modal-glass: 0;
+  --effect-dropdown-glass: 0;
+  --effect-checkbox-glow: 0;
+  --effect-heading-glow: 0;
+  --effect-button-glow: 0;
+
+  /* Effect colors */
+  --neon-primary: rgba(96, 165, 250, 0.5);
+  --neon-secondary: rgba(167, 139, 250, 0.5);
+}

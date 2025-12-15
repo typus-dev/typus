@@ -1,0 +1,63 @@
+# ============================================
+# Production Backend - Simplified (tsx)
+# ============================================
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install tsx for TypeScript execution
+RUN npm install -g tsx
+
+# Copy root package files and install root dependencies
+COPY package*.json ./
+RUN npm install --only=production
+
+# Install pnpm for monorepo support
+RUN npm install -g pnpm
+
+# Copy shared modules first (backend depends on it)
+COPY @typus-core/shared ./@typus-core/shared
+
+# Copy pnpm workspace configuration
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+
+# Copy backend package.json and install backend dependencies with pnpm
+COPY @typus-core/backend/package*.json ./@typus-core/backend/
+WORKDIR /app/@typus-core/backend
+RUN pnpm install --frozen-lockfile || pnpm install
+
+# Copy backend source code
+WORKDIR /app
+COPY @typus-core/backend ./@typus-core/backend
+# Remove any copied node_modules from host (shouldn't happen due to .dockerignore, but ensure it)
+RUN rm -rf ./@typus-core/backend/node_modules
+COPY @typus-core/frontend/src/auto-modules.ts ./@typus-core/frontend/src/auto-modules.ts
+COPY data/prisma ./data/prisma
+
+# Reinstall dependencies in the correct location
+WORKDIR /app/@typus-core/backend
+RUN pnpm install --frozen-lockfile || pnpm install
+
+# Generate Prisma Client for Alpine Linux (linux-musl)
+WORKDIR /app/@typus-core/backend
+# Create temporary schema with hardcoded provider for build-time generation
+RUN sed 's/provider = env("DB_PROVIDER")/provider = "mysql"/' ../../data/prisma/schemas/schema.merged.prisma > ../../data/prisma/schemas/schema.build.prisma && \
+    npx prisma generate --schema=../../data/prisma/schemas/schema.build.prisma && \
+    rm ../../data/prisma/schemas/schema.build.prisma
+
+# Set production environment
+ENV NODE_ENV=production
+
+# Expose backend port
+EXPOSE 3000
+
+# Health check (backend runs on port 3001, health endpoint is /api/health)
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD wget --spider -q http://localhost:3001/api/health || exit 1
+
+# Change to backend directory for proper module resolution
+WORKDIR /app/@typus-core/backend
+
+# Start with tsx (no watch, just run)
+CMD ["tsx", "server.ts"]

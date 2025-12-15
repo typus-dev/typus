@@ -1,0 +1,89 @@
+/*
+ * ⚠️  DO NOT MODIFY CLASS STRUCTURE
+ * 
+ * This is a REFERENCE theme used as template for theme generation.
+ * Changing class names or removing classes will break theme generator.
+ * 
+ * You MAY modify:
+ * - Default values (padding, colors, sizes)
+ * - Add new classes
+ * 
+ * You MUST NOT:
+ * - Rename existing classes
+ * - Remove existing classes
+ * - Change selector structure
+ */
+
+/* ==========================================================================
+   01-BASE - Base tokens
+   ========================================================================== */
+
+[data-theme="dark-theme"] .theme-base-radius {
+  border-radius: var(--radius-lg);
+}
+
+[data-theme="dark-theme"] .theme-base-shadow {
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="dark-theme"] .theme-base-border {
+  border: 1px solid var(--color-border-primary);
+}
+
+[data-theme="dark-theme"] .theme-base-borderNone {
+  border: none;
+}
+
+[data-theme="dark-theme"] .theme-base-spacing-sm {
+  margin: var(--spacing-sm);
+}
+
+[data-theme="dark-theme"] .theme-base-spacing-md {
+  margin: var(--spacing-md);
+}
+
+[data-theme="dark-theme"] .theme-base-animation-duration {
+  transition-duration: 300ms;
+}
+
+[data-theme="dark-theme"] .theme-base-animation-easing {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark-theme"] .theme-base-zIndex {
+  z-index: 10;
+}
+
+[data-theme="dark-theme"] .theme-border {
+  border: 1px solid var(--color-border-primary);
+}
+
+/* ========================================================================== 
+   PAGE BACKGROUND
+   ========================================================================== */
+
+html[data-theme="dark-theme"] body {
+  background: var(--app-background-fill, var(--color-bg-primary));
+  color: var(--color-text-primary);
+}
+
+/* ========================================================================== 
+   GRID BACKGROUND
+   ========================================================================== */
+
+[data-theme="dark-theme"] body::before,
+html[data-theme="dark-theme"] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(var(--color-border-primary) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border-primary) 1px, transparent 1px);
+  background-size: 25px 25px;
+  opacity: 0.55;
+  z-index: -1;
+  pointer-events: none;
+}

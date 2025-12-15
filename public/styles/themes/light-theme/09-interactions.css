@@ -1,0 +1,43 @@
+/*
+ * ⚠️  DO NOT MODIFY CLASS STRUCTURE
+ * 
+ * This is a REFERENCE theme used as template for theme generation.
+ * Changing class names or removing classes will break theme generator.
+ * 
+ * You MAY modify:
+ * - Default values (padding, colors, sizes)
+ * - Add new classes
+ * 
+ * You MUST NOT:
+ * - Rename existing classes
+ * - Remove existing classes
+ * - Change selector structure
+ */
+
+/* ==========================================================================
+   09-INTERACTIONS - Interactive states
+   ========================================================================== */
+
+/* Basic States */
+[data-theme="light-theme"] .theme-interactions-hover:hover { opacity: 0.9; }
+[data-theme="light-theme"] .theme-interactions-focus:focus { outline: none; box-shadow: 0 0 0 2px var(--color-ring-focus); }
+[data-theme="light-theme"] .theme-interactions-active:active { transform: scale(0.98); }
+[data-theme="light-theme"] .theme-interactions-disabled:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Transition Properties */
+[data-theme="light-theme"] .theme-interactions-transition-property { transition-property: all; }
+[data-theme="light-theme"] .theme-interactions-transition-duration { transition-duration: 300ms; }
+[data-theme="light-theme"] .theme-interactions-transition-timing { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* Transform */
+[data-theme="light-theme"] .theme-interactions-transform-scale:hover { transform: scale(1.05); }
+[data-theme="light-theme"] .theme-interactions-transform-rotate { transform: rotate(0deg); }
+[data-theme="light-theme"] .theme-interactions-transform-translate { transform: translate(0, 0); }
+
+/* States */
+[data-theme="light-theme"] .theme-interactions-states-hover:hover { background-color: var(--color-bg-hover); }
+[data-theme="light-theme"] .theme-interactions-states-selected { background-color: var(--color-bg-accent); color: var(--color-text-accent); }
+[data-theme="light-theme"] .theme-interactions-states-pressed:active { transform: scale(0.98); }
+[data-theme="light-theme"] .theme-interactions-states-focus:focus { outline: none; box-shadow: 0 0 0 2px var(--color-ring-focus); }
+[data-theme="light-theme"] .theme-interactions-states-active { opacity: 0.75; }
+[data-theme="light-theme"] .theme-interactions-states-disabled:disabled { opacity: 0.5; cursor: not-allowed; }
