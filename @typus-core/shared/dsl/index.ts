@@ -10,13 +10,14 @@
  * @author Dmytro Klymentiev
  */
 
-export * from './types.js';
-export * from './models.js'; // Assuming models are structured for direct export
-
-import fs from 'fs';
-import path from 'path';
-import { execSync } from 'child_process';
-import { DslModel, DslRegistry } from './types.js';
+	export * from './types.js';
+	export * from './models.js'; // Assuming models are structured for direct export
+	
+	import fs from 'fs';
+	import path from 'path';
+	import { execFileSync } from 'child_process';
+	import { fileURLToPath, pathToFileURL } from 'url';
+	import { DslModel, DslRegistry } from './types.js';
 
 // Create registry
 class Registry implements DslRegistry {
@@ -41,13 +42,11 @@ class Registry implements DslRegistry {
   }
 }
 
-// Create and export registry
-export const registry = new Registry();
-
-// Get the directory name of the current module
-// Using a fixed path since we know the project structure
-const PROJECT_ROOT = '/server/sites/HARDCODE';
-const DSL_DIR = path.join(PROJECT_ROOT, 'shared/dsl');
+	// Create and export registry
+	export const registry = new Registry();
+	
+	// Resolve DSL directory from this module location (portable across installs)
+	const DSL_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 
 // Load models from files
 async function loadModels() {
@@ -63,8 +62,11 @@ async function loadModels() {
       if (!fs.statSync(moduleDir).isDirectory()) continue;
       
       // Get all model files in the module directory
-      const modelFiles = fs.readdirSync(moduleDir)
-        .filter(file => file.endsWith('.model') || file.endsWith('.model.js'));
+	      const modelFiles = fs.readdirSync(moduleDir).filter(file =>
+	        file.endsWith('.model') ||
+	        file.endsWith('.model.js') ||
+	        file.endsWith('.model.ts')
+	      );
       
       for (const modelFile of modelFiles) {
         const modelPath = path.join(moduleDir, modelFile);
@@ -77,8 +79,10 @@ async function loadModels() {
             .map(part => part.charAt(0).toUpperCase() + part.slice(1))
             .join('') + 'Model';
           
-          // Use tsx to execute the TypeScript file and get the model
-          const result = execSync(`npx tsx -e "import { ${baseName} as model } from '${modelPath}'; console.log(JSON.stringify(model))"`).toString();
+	          // Use tsx to execute the TypeScript file and get the model
+	          const specifier = pathToFileURL(modelPath).href;
+	          const code = `import { ${baseName} as model } from ${JSON.stringify(specifier)}; console.log(JSON.stringify(model))`;
+	          const result = execFileSync('npx', ['tsx', '-e', code], { encoding: 'utf8' });
           
           // Parse the model from the output
           const model = JSON.parse(result);

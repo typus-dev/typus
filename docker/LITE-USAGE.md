@@ -25,7 +25,7 @@ LITE profile consolidates the entire Typus application into a single Docker cont
 
 ```bash
 # Navigate to your project directory
-cd /path/to/typus-lite
+cd /path/to/typus
 
 # Build the image
 docker compose -f docker-compose.lite.yml build
@@ -103,7 +103,7 @@ docker compose -f docker-compose.lite.yml down
 ## File Structure
 
 ```
-/path/to/typus-lite/
+/path/to/typus/
 ├── docker/
 │   ├── Dockerfile.lite         # Main Dockerfile
 │   ├── supervisord.conf               # Process manager config
@@ -348,7 +348,7 @@ For issues or questions:
 - Check logs: `docker compose -f docker-compose.lite.yml logs`
 - Review nginx config: `docker/nginx/nginx-lite.conf`
 - Review supervisord config: `docker/supervisord.conf`
-- See architectural analysis: `/server/sites/typus-lite/work-log/investigations/2025-10-18_single-container-architecture-feasibility.md`
+- See architectural analysis: `work-log/investigations/2025-10-18_single-container-architecture-feasibility.md`
 
 ---
 

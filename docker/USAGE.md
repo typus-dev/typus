@@ -38,7 +38,7 @@ docker/
 
 ```bash
 # Navigate to your project directory
-cd /path/to/typus-lite
+cd /path/to/typus
 
 # Build from docker/ directory
 docker compose -f docker/docker-compose.lite-single.yml build

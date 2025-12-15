@@ -54,8 +54,8 @@ TYPUS_ROOT_DIR=""
 
 # Try to auto-detect "host root" (where release-system/releases exists).
 # This supports layouts like:
-#   /server/sites/typus/test-installations/<domain>
-#   /server/sites/typus/<domain>
+#   <typus-root>/test-installations/<domain>
+#   <typus-root>/<domain>
 detect_typus_root() {
     local dir="$INSTALL_DIR"
     while [ -n "$dir" ] && [ "$dir" != "/" ]; do

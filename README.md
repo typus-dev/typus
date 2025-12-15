@@ -1,4 +1,4 @@
-# Typus LITE v1.1.91
+# Typus LITE v1.1.92
 
 Complete snapshot release for LITE profile with profile switching system.
 
@@ -36,32 +36,36 @@ Complete snapshot release for LITE profile with profile switching system.
 - External MySQL + Traefik
 - Optimized for performance
 
-## Quick Start
+	## Quick Start
+	
+	```bash
+	# Option A: GitHub clone (recommended)
+	git clone https://github.com/typus-dev/typus.git
+	cd typus
+	
+	# Option B: Release archive
+	# mkdir typus && tar -xzf lite-complete-1.1.92.tar.gz -C typus
+	# cd typus
+	
+	# Zero-config localhost (recommended)
+	# No external DB, no Traefik, no .env required
+	docker compose up -d --build
 
-```bash
-# Extract archive
-tar -xzf lite-complete-1.1.91.tar.gz
-cd typus-lite
-
-# Install dependencies (uses file: protocol for local modules)
-cd @typus-core/backend && npm install --production && cd ..
-cd @typus-core/frontend && npm install --production && cd ..
-
-# Run installation
-./setup/install.sh
-# Or use quick start with defaults:
-./setup/quickstart.sh
+# Open:
+#   http://localhost:3000
+# Login (local defaults):
+#   admin@localhost / admin12345
 ```
 
-## Manual Installation
-
-1. Extract and configure:
-   ```bash
-   tar -xzf lite-complete-1.1.91.tar.gz
-   cd typus-lite
-   cp .env.example .env
-   # Edit .env for your database and secrets
-   ```
+	## Manual Installation
+	
+	1. Extract and configure:
+	   ```bash
+	   mkdir typus && tar -xzf lite-complete-1.1.92.tar.gz -C typus
+	   cd typus
+	   cp .env.example .env
+	   # Edit .env for your database and secrets
+	   ```
 
 2. Choose and activate a profile:
    ```bash
@@ -119,4 +123,4 @@ This is a **STANDARD** snapshot:
 - Uses file: protocol for local modules
 - Best for bandwidth-limited scenarios
 
-## Generated: 2025-12-15T18:48:03.421Z
+## Generated: 2025-12-15T20:46:28.890Z

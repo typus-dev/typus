@@ -20,7 +20,7 @@ export class ModuleLoader {
   // NOTE: tsx runtime approach
   // We always use 'src/' directory regardless of NODE_ENV.
   // This is because we use tsx (TypeScript runtime) instead of compilation.
-  // See: /server/sites/typus-lite/work-log/investigations/2025-10-18_production-build-tsx-vs-compile.md
+  // See: work-log/investigations/2025-10-18_production-build-tsx-vs-compile.md
   // =================================================================
   /**
    * @private

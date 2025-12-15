@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Build script for lite-single Docker image with proper error handling
-# Location: /server/sites/typus-lite/dev.typus.dev/docker/build-lite-single.sh
+# Location: docker/build-lite-single.sh
 
 set -e  # Exit on error
 
@@ -16,11 +16,11 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 DOCKERFILE="$SCRIPT_DIR/Dockerfile.lite-single"
-IMAGE_NAME="typus-lite-single"
+IMAGE_NAME="typus-single"
 IMAGE_TAG="${1:-latest}"
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}Typus Lite Single Container Build${NC}"
+echo -e "${BLUE}Typus Single Container Build${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 
@@ -100,7 +100,7 @@ if [ $BUILD_STATUS -eq 0 ]; then
     echo -e "${GREEN}========================================${NC}"
     echo ""
     echo "To run the container:"
-    echo "  docker run -d --name typus-lite -p 80:80 $IMAGE_NAME:$IMAGE_TAG"
+    echo "  docker run -d --name typus -p 80:80 $IMAGE_NAME:$IMAGE_TAG"
     echo ""
     echo "To inspect the built image:"
     echo "  docker run --rm -it $IMAGE_NAME:$IMAGE_TAG /bin/sh"
