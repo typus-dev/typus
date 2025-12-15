@@ -1,4 +1,4 @@
-# Typus LITE v1.1.97
+# Typus LITE v1.1.98
 
 Complete snapshot release for LITE profile with profile switching system.
 
@@ -44,7 +44,7 @@ Complete snapshot release for LITE profile with profile switching system.
 	cd typus
 	
 	# Option B: Release archive
-	# mkdir typus && tar -xzf lite-complete-1.1.97.tar.gz -C typus
+	# mkdir typus && tar -xzf lite-complete-1.1.98.tar.gz -C typus
 	# cd typus
 	
 	# Zero-config localhost (recommended)
@@ -61,7 +61,7 @@ Complete snapshot release for LITE profile with profile switching system.
 	
 	1. Extract and configure:
 	   ```bash
-	   mkdir typus && tar -xzf lite-complete-1.1.97.tar.gz -C typus
+	   mkdir typus && tar -xzf lite-complete-1.1.98.tar.gz -C typus
 	   cd typus
 	   cp .env.example .env
 	   # Edit .env for your database and secrets
@@ -123,4 +123,4 @@ This is a **STANDARD** snapshot:
 - Uses file: protocol for local modules
 - Best for bandwidth-limited scenarios
 
-## Generated: 2025-12-15T22:08:28.412Z
+## Generated: 2025-12-15T22:33:33.492Z

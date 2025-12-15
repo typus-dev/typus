@@ -140,6 +140,10 @@ SITE_BACKUP="$BACKUP_DIR/site_${TIMESTAMP}.tar.gz"
 tar -czf "$SITE_BACKUP" \
     --exclude='storage/uploads' \
     --exclude='storage/backups' \
+    --exclude='storage/cache' \
+    --exclude='storage/html-cache' \
+    --exclude='storage/temp' \
+    --exclude='storage/logs' \
     --exclude='node_modules' \
     -C "$(dirname $INSTALL_DIR)" \
     "$(basename $INSTALL_DIR)" 2>/dev/null || true
