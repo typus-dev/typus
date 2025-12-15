@@ -81,22 +81,22 @@ services:
       MYSQL_DATABASE: typus_db
       MYSQL_USER: ${DB_USER:-typus}
       MYSQL_PASSWORD: ${DB_PASSWORD:-typus_password}
-	    volumes:
-	      - mysql-data:/var/lib/mysql
-	      # Optional: Custom MySQL configuration
-	      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
-	    networks:
-	      - typus-local
-	    # MySQL is not published to host by default (avoids port conflicts).
-	    # App connects via service name `mysql` inside the Docker network.
-	    # To expose MySQL for local debugging, add:
-	    # ports:
-	    #   - "3307:3306"
-	    healthcheck:
-	      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_secret}"]
-	      interval: 10s
-	      timeout: 5s
-	      retries: 5
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # Optional: Custom MySQL configuration
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    networks:
+      - typus-local
+    # MySQL is not published to host by default (avoids port conflicts).
+    # App connects via service name `mysql` inside the Docker network.
+    # To expose MySQL for local debugging, add:
+    # ports:
+    #   - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_secret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 30s
     command:
       - --character-set-server=utf8mb4
