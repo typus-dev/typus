@@ -1,5 +1,3 @@
-version: '3.8'
-
 # DEVELOPMENT Configuration
 # Single container: nginx + backend (managed by supervisord)
 # Features: Hot reload with bind mounts, external MySQL, Traefik

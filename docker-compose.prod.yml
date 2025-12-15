@@ -1,5 +1,3 @@
-version: '3.8'
-
 # LITE Production Configuration
 # Single container: nginx + backend (managed by supervisord)
 # Use: docker compose -f docker-compose.prod.yml up

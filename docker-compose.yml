@@ -1,5 +1,3 @@
-version: '3.8'
-
 # LOCALHOST Development Configuration
 # Zero external dependencies - works on any laptop
 # Features: Embedded MySQL, direct port access, no Traefik required
