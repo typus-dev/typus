@@ -18,16 +18,21 @@ logs/
 # Source maps
 *.map
 
-# Backups and database dumps
-storage/backups/*
-!storage/backups/.gitkeep
-*.sql
-*.sql.gz
-
-# Runtime data
-storage/cache/*
-storage/html-cache/*
-storage/temp/*
+	# Backups and database dumps
+	storage/backups/*
+	!storage/backups/.gitkeep
+	*.sql
+	*.sql.gz
+	
+	# Keep required SQL migrations/baseline in repo
+	!data/baseline/defaults/*.sql
+	!data/prisma/migrations/**/migration.sql
+	!data/prisma/schemas/migrations/**/migration.sql
+	
+	# Runtime data
+	storage/cache/*
+	storage/html-cache/*
+	storage/temp/*
 !storage/cache/.gitkeep
 !storage/html-cache/.gitkeep
 !storage/temp/.gitkeep
