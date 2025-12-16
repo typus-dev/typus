@@ -82,7 +82,7 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       # Optional: Custom MySQL configuration
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+      - ./docker/mysql/my.cnf/custom.cnf:/etc/mysql/conf.d/custom.cnf:ro
     networks:
       - typus-local
     # MySQL is not published to host by default (avoids port conflicts).
@@ -91,7 +91,7 @@ services:
     # ports:
     #   - "3307:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_secret}"]
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysqladmin ping -h localhost -u root"]
       interval: 10s
       timeout: 5s
       retries: 5
