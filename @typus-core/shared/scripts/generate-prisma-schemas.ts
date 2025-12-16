@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url';
 import { registry } from '../dsl/registry.js';
 import { PrismaSchemaGenerator } from '../dsl/prisma-generator/index.js';
 
-// Load models using register-models mechanism
-import '../dsl/register-models.js';
+// Load models using register-models mechanism (and await deterministically)
+import { modelsReady } from '../dsl/register-models.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -95,6 +95,13 @@ async function generatePrismaSchemas(): Promise<void> {
     // Fallback if DslModule not available
     console.warn('⚠️  Could not load DslModule, using fallback timeout (5s)');
     await new Promise(resolve => setTimeout(resolve, 5000));
+  }
+
+  // Ensure register-models scan has fully completed (avoids nondeterministic missing targets)
+  try {
+    await modelsReady;
+  } catch (error: any) {
+    console.warn('⚠️  modelsReady rejected, continuing with current registry state:', error?.message || error);
   }
 
   // Get only models with generatePrisma: true

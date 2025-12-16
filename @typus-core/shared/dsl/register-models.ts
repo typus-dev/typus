@@ -143,5 +143,14 @@ async function scanPluginModels(pluginsDir: string): Promise<void> {
   }
 }
 
-// Auto-register models when this file is imported
-registerAllModels();
+// Auto-register models when this file is imported, but expose a Promise
+// so scripts can deterministically wait for scanning to complete.
+export const modelsReady = registerAllModels();
+
+// Optional global hook for non-module consumers/debugging
+try {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (globalThis as any).__TYPUS_DSL_MODELS_READY__ = modelsReady;
+} catch {
+  // no-op
+}

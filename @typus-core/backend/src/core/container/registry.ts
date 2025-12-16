@@ -6,6 +6,7 @@ import { SmtpProvider } from '@/modules/email/providers/SmtpProvider.js';
 import { SendGridApiProvider } from '@/modules/email/providers/SendGridProvider.js';
 import { TemplateService } from '@/modules/email/services/TemplateService.js';
 import { EventBus } from '@/events/EventBus.js';
+import prisma from '@/core/database/prisma.js';
 
 const logger = global.logger || new Logger();
 
@@ -86,6 +87,10 @@ export function registerCoreServices(): void {
     logger.info('[Registry] Registering core services');
 
     try {
+        if (!container.isRegistered('PrismaClient')) {
+            container.registerInstance('PrismaClient', prisma);
+            logger.info('[Registry] Registered PrismaClient instance');
+        }
         register(EventBus);
         logger.info('[Registry] Core services registered successfully');
     } catch (error) {
