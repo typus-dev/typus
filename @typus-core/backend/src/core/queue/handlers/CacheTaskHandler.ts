@@ -262,7 +262,7 @@ export class CacheTaskHandler extends BaseTaskHandler {
 
       // Step 2: Call cache generator service with Circuit Breaker + Retry
       // Get URL from database config with fallback to env → default
-      const configService = ConfigService.getInstance();
+      const configService = container.resolve(ConfigService);
       const cacheGeneratorUrl = await configService.get('cache.html_generator_url') ||
                                 process.env.CACHE_GENERATOR_URL ||
                                 'http://cache_generator_service:3100';

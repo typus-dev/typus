@@ -238,6 +238,32 @@ echo -e "${BLUE}🔄 Updating pnpm-lock.yaml...${NC}"
 cp "$TEMP_DIR/pnpm-lock.yaml" "$INSTALL_DIR/"
 echo -e "${GREEN}✓ pnpm-lock.yaml updated${NC}"
 
+# Baseline defaults + seed scripts are part of core (should be kept in sync)
+echo -e "${BLUE}🔄 Updating baseline seed scripts...${NC}"
+if [ -d "$TEMP_DIR/data/baseline" ]; then
+    rm_rf_with_docker_fallback "$INSTALL_DIR/data/baseline"
+    mkdir -p "$INSTALL_DIR/data"
+    cp -r "$TEMP_DIR/data/baseline" "$INSTALL_DIR/data/"
+    echo -e "${GREEN}✓ data/baseline updated${NC}"
+else
+    echo -e "${YELLOW}⚠️  data/baseline not found in release, skipping${NC}"
+fi
+
+# Runtime files that must stay in sync with core (permissions, supervisord, entrypoint)
+echo -e "${BLUE}🔄 Updating runtime (Dockerfile + docker configs/scripts)...${NC}"
+if [ -f "$TEMP_DIR/Dockerfile.prod" ]; then
+    cp "$TEMP_DIR/Dockerfile.prod" "$INSTALL_DIR/"
+fi
+mkdir -p "$INSTALL_DIR/docker/configs" "$INSTALL_DIR/docker/scripts"
+if [ -f "$TEMP_DIR/docker/configs/supervisord.conf" ]; then
+    cp "$TEMP_DIR/docker/configs/supervisord.conf" "$INSTALL_DIR/docker/configs/"
+fi
+if [ -f "$TEMP_DIR/docker/scripts/entrypoint.sh" ]; then
+    cp "$TEMP_DIR/docker/scripts/entrypoint.sh" "$INSTALL_DIR/docker/scripts/"
+    chmod +x "$INSTALL_DIR/docker/scripts/entrypoint.sh" 2>/dev/null || true
+fi
+echo -e "${GREEN}✓ Runtime updated${NC}"
+
 # =============================================================================
 # STEP 5: Check config files (create .update if different)
 # =============================================================================

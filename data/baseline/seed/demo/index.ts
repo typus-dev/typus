@@ -12,12 +12,12 @@
  */
 
 import { PrismaClient } from '../../../prisma/generated/client/index.js';
-import { seedSystemLogs } from './system-logs.js';
-import { seedAuthHistory } from './auth-history.js';
-import { seedSessions } from './sessions.js';
-import { seedDispatcherHistory } from './dispatcher-history.js';
-import { seedDemoScenarios } from './demo-scenarios.js';
-import { seedNewsletterData } from './newsletter.js';
+import { seedSystemLogs } from './system-logs.ts';
+import { seedAuthHistory } from './auth-history.ts';
+import { seedSessions } from './sessions.ts';
+import { seedDispatcherHistory } from './dispatcher-history.ts';
+import { seedDemoScenarios } from './demo-scenarios.ts';
+import { seedNewsletterData } from './newsletter.ts';
 
 export async function seedExtendedDemo(prisma: PrismaClient) {
   console.log('');

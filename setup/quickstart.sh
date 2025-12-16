@@ -73,7 +73,15 @@ echo -e "${GREEN}✓ Docker networks ready${NC}"
 # Export current user's UID/GID for Docker (portable across different hosts)
 export HOST_UID=$(id -u)
 export HOST_GID=$(id -g)
-echo -e "${GREEN}✓ Detected user: UID=$HOST_UID, GID=$HOST_GID${NC}"
+
+# Optional shared group (appgroup) for bind-mounted storage/logs.
+APPGROUP_GID=""
+if getent group appgroup >/dev/null 2>&1 && id -nG | grep -qw appgroup; then
+    APPGROUP_GID="$(getent group appgroup | cut -d: -f3)"
+fi
+export APP_GID="${APPGROUP_GID:-$HOST_GID}"
+
+echo -e "${GREEN}✓ Detected user: UID=$HOST_UID, GID=$HOST_GID (APP_GID=$APP_GID)${NC}"
 
 echo ""
 echo -e "${BLUE}Starting Typus LITE...${NC}"

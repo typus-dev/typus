@@ -1,6 +1,14 @@
 #!/bin/bash
 echo "🚀 Starting backend service (LITE profile)..."
 
+# Shared-write by default (storage/backups/uploads/logs on bind mounts).
+umask 0002
+
+# pnpm/prisma sometimes default to /root paths when HOME isn't set by supervisor.
+export HOME="${HOME:-/home/appuser}"
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+
 # App root is always /app in Docker
 APP_ROOT="/app"
 PRISMA_CLIENT_DIR="${APP_ROOT}/data/prisma/generated/client"
@@ -214,7 +222,8 @@ if [ -f "${MANIFEST_PATH}" ]; then
     # Mark migrations as successfully completed (prevents re-run on restart)
     if command -v jq >/dev/null 2>&1; then
       # Use jq: delete ALL old migration keys first to avoid duplicates, then add new values
-      jq 'del(.migrations_applied, .migrations_applied_at, .migrations_started_at, .migrations_completed_at) | . + {"migrations_applied": true, "migrations_completed_at": "'$(date -Iseconds)'"}' "${MANIFEST_PATH}" > "${MANIFEST_PATH}.tmp" && mv "${MANIFEST_PATH}.tmp" "${MANIFEST_PATH}"
+      tmp_manifest="$(mktemp /tmp/typus-manifest.XXXXXX)"
+      jq 'del(.migrations_applied, .migrations_applied_at, .migrations_started_at, .migrations_completed_at) | . + {"migrations_applied": true, "migrations_completed_at": "'$(date -Iseconds)'"}' "${MANIFEST_PATH}" > "${tmp_manifest}" && mv "${tmp_manifest}" "${MANIFEST_PATH}"
       echo "✅ Updated manifest: migrations_applied = true"
     else
       # Fallback: sed (remove ALL old migration entries first if they exist)
@@ -236,14 +245,14 @@ fi
 # (backend_modules is a named volume, data is in bind mount)
 echo "📋 Copying pre-generated Prisma client to node_modules..."
 cd "${APP_ROOT}/@typus-core/backend" || exit 1
-rm -rf node_modules/.prisma
-mkdir -p node_modules/@prisma
-rm -rf node_modules/@prisma/client
-cp -r "${PRISMA_CLIENT_DIR}" node_modules/@prisma/client || {
-  echo "❌ Failed to copy Prisma client!"
-  exit 1
-}
-echo "✅ Prisma client copied to node_modules/@prisma/client"
+rm -rf node_modules/.prisma 2>/dev/null || true
+mkdir -p node_modules/@prisma 2>/dev/null || true
+rm -rf node_modules/@prisma/client 2>/dev/null || true
+if cp -r "${PRISMA_CLIENT_DIR}" node_modules/@prisma/client 2>/dev/null; then
+  echo "✅ Prisma client copied to node_modules/@prisma/client"
+else
+  echo "⚠️  Prisma client copy skipped (permissions). Using generated client from: ${PRISMA_CLIENT_DIR}"
+fi
 
 echo "🎯 Starting backend server..."
 cd "${APP_ROOT}/@typus-core/backend"

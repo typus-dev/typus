@@ -90,6 +90,8 @@ generate_profile_env() {
     # Set UID/GID (same for all profiles)
     sed -i "s|HOST_UID=1000|HOST_UID=${HOST_UID}|g" "$output_file"
     sed -i "s|HOST_GID=1000|HOST_GID=${HOST_GID}|g" "$output_file"
+    # Shared group (optional)
+    sed -i "s|APP_GID=1000|APP_GID=${APP_GID}|g" "$output_file"
 
     # Admin credentials (generated per installation)
     sed -i "s|ADMIN_EMAIL=CHANGE_ME_ADMIN_EMAIL|ADMIN_EMAIL=${ADMIN_EMAIL}|g" "$output_file"
@@ -169,6 +171,14 @@ COMPOSE_PROJECT_NAME="$(echo ${APP_DOMAIN} | tr '.-' '_' | tr '[:upper:]' '[:low
 # Set user permissions for Docker (needed by generate_profile_env)
 export HOST_UID=$(id -u)
 export HOST_GID=$(id -g)
+
+# Optional shared group (appgroup) for bind-mounted storage/logs.
+# If current user is a member of appgroup, prefer its gid to enable group-shared writes.
+APPGROUP_GID=""
+if getent group appgroup >/dev/null 2>&1 && id -nG | grep -qw appgroup; then
+    APPGROUP_GID="$(getent group appgroup | cut -d: -f3)"
+fi
+export APP_GID="${APPGROUP_GID:-$HOST_GID}"
 
 # Generate nginx-dev.conf from template with actual PROJECT_PATH
 echo ""

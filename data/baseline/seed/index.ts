@@ -12,14 +12,14 @@
 
 // Import Prisma Client from pre-generated location (relative path from seed directory: /app/data/baseline/seed/)
 import { PrismaClient } from '../../prisma/generated/client/index.js';
-import { seedSystemConfig } from './001-system-config.js';
-import { seedAdminUser } from './002-admin-user.js';
-import { seedDemoData } from './003-demo-data.js';
-import { seedConfigPublic } from './004-config-public.js';
-import { seedDispatcherTasks } from './005-dispatcher-tasks.js';
-import { seedCmsPages } from './006-cms-pages.js';
-import { seedCmsRoutes } from './007-cms-routes.js';
-import { seedExtendedDemo } from './demo/index.js';
+import { seedSystemConfig } from './001-system-config.ts';
+import { seedAdminUser } from './002-admin-user.ts';
+import { seedDemoData } from './003-demo-data.ts';
+import { seedConfigPublic } from './004-config-public.ts';
+import { seedDispatcherTasks } from './005-dispatcher-tasks.ts';
+import { seedCmsPages } from './006-cms-pages.ts';
+import { seedCmsRoutes } from './007-cms-routes.ts';
+import { seedExtendedDemo } from './demo/index.ts';
 
 const prisma = new PrismaClient();
 

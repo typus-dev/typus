@@ -8,30 +8,37 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
+      "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./dsl": {
       "import": "./dist/dsl/index.js",
+      "require": "./dist/dsl/index.js",
       "types": "./dist/dsl/index.d.ts"
     },
     "./dsl/types": {
       "import": "./dsl/types",
+      "require": "./dsl/types",
       "types": "./dsl/types.d.ts"
     },
     "./dsl/registry": {
       "import": "./dsl/registry",
+      "require": "./dsl/registry",
       "types": "./dsl/registry.d.ts"
     },
     "./dsl/register-models": {
       "import": "./dsl/register-models",
+      "require": "./dsl/register-models",
       "types": "./dsl/register-models.d.ts"
     },
     "./dsl/*": {
       "import": "./dsl/*",
+      "require": "./dsl/*",
       "types": "./dsl/*.d.ts"
     },
     "./dxce/*": {
       "import": "./dist/dxce/*.js",
+      "require": "./dist/dxce/*.js",
       "types": "./dist/dxce/*.d.ts"
     },
     "./package.json": "./package.json"

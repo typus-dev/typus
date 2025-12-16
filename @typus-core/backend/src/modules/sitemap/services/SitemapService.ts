@@ -179,11 +179,38 @@ private async getStaticRoutes(): Promise<RouteInfo[]> {
     let routesData: RouteInfo[] = [];
 
     if (isProd) {
-      const httpUrl = new URL('/routes.json', process.env.FRONTEND_URL).toString();
-      this.logger.info(`[SitemapService] Production mode — loading routes from ${httpUrl}`);
-      const { data } = await axios.get(httpUrl, { timeout: 5000 });
-      if (!Array.isArray(data)) throw new Error('Invalid routes.json format from HTTP');
-      routesData = data;
+      const basePath = process.env.PROJECT_PATH || '/app';
+      const possiblePaths = [
+        path.join(basePath, '@typus-core/frontend/dist/routes.json'),
+        path.join(basePath, '@typus-core/frontend/public/routes.json'),
+        path.join(basePath, 'public/routes.json'),
+      ];
+
+      for (const routesPath of possiblePaths) {
+        try {
+          await fs.access(routesPath);
+          const content = await fs.readFile(routesPath, 'utf8');
+          const parsed = JSON.parse(content);
+          if (!Array.isArray(parsed)) throw new Error('Invalid routes.json format from file');
+          routesData = parsed;
+          this.logger.info(`[SitemapService] Production mode — loaded routes from file: ${routesPath}`);
+          break;
+        } catch {
+          this.logger.debug(`[SitemapService] Routes not found at: ${routesPath}`);
+        }
+      }
+
+      if (!routesData.length) {
+        const baseUrl = process.env.FRONTEND_URL || this.frontendUrl;
+        if (!baseUrl) {
+          throw new Error('FRONTEND_URL not set and routes.json not found in filesystem');
+        }
+        const httpUrl = new URL('/routes.json', baseUrl).toString();
+        this.logger.info(`[SitemapService] Production mode — fallback loading routes from HTTP: ${httpUrl}`);
+        const { data } = await axios.get(httpUrl, { timeout: 5000 });
+        if (!Array.isArray(data)) throw new Error('Invalid routes.json format from HTTP');
+        routesData = data;
+      }
     } else {
       const basePath = process.env.PROJECT_PATH || '/app';
       const possiblePaths = [

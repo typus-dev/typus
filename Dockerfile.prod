@@ -45,6 +45,9 @@ RUN NODE_ENV=production pnpm run build
 # =============================================================================
 FROM node:20-slim
 
+ARG APP_UID=1100
+ARG APP_GID=150
+
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     nginx \
@@ -53,6 +56,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     default-mysql-client \
     jq \
+    passwd \
     && rm -rf /var/lib/apt/lists/*
 
 # Install tsx globally for TypeScript execution
@@ -60,6 +64,10 @@ RUN npm install -g tsx pnpm
 
 # Create app directory
 WORKDIR /app
+
+# Create non-root user/group for backend (nginx still runs as root to bind :80)
+RUN groupadd -g ${APP_GID} appgroup \
+  && useradd -u ${APP_UID} -g ${APP_GID} -m -s /bin/bash appuser
 
 # Copy pnpm workspace files
 COPY pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json .npmrc ./
@@ -76,6 +84,9 @@ RUN pnpm install --no-frozen-lockfile
 
 # Create symlink for tsyringe (needed by plugins)
 RUN ln -sf /app/node_modules/.pnpm/tsyringe@4.10.0/node_modules/tsyringe /app/node_modules/tsyringe
+
+# Prisma generates engines into node_modules; backend runs as appuser so node_modules must be writable.
+RUN chown -R appuser:appgroup /app/node_modules
 
 # Copy data/prisma package.json for dependency installation
 COPY data/prisma/package.json data/prisma/
@@ -111,6 +122,16 @@ COPY data/seeds /app/data/seeds
 # Copy baseline SQL files for first-time setup
 COPY data/baseline /app/data/baseline
 
+# Baseline seed scripts must be readable by backend user
+RUN chown -R appuser:appgroup /app/data/baseline
+
+# Backend runs as appuser; ensure core sources are readable even if host permissions are restrictive.
+RUN chmod -R a+rX /app/@typus-core \
+  && chmod -R a+rX /app/data/baseline \
+  && chmod -R a+rX /app/plugins \
+  && chown -R appuser:appgroup /app/plugins \
+  && chown -R appuser:appgroup /app/@typus-core/backend/node_modules 2>/dev/null || true
+
 # Copy nginx configuration (from new configs location)
 COPY docker/configs/nginx.conf /etc/nginx/nginx.conf
 COPY docker/configs/redirects.conf /etc/nginx/conf.d/redirects.conf
@@ -122,6 +143,10 @@ COPY docker/configs/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY @typus-core/backend/backend-startup-prod.sh /app/@typus-core/backend/backend-startup-prod.sh
 RUN chmod +x /app/@typus-core/backend/backend-startup-prod.sh
 
+# Runtime entrypoint: create appuser/appgroup and fix bind-mount permissions
+COPY docker/scripts/entrypoint.sh /app/docker/scripts/entrypoint.sh
+RUN chmod +x /app/docker/scripts/entrypoint.sh
+
 # Create required directories
 RUN mkdir -p /app/storage/cache/html \
     /app/storage/html-cache \
@@ -130,6 +155,9 @@ RUN mkdir -p /app/storage/cache/html \
     /var/log/supervisor \
     /var/run \
     /app/docker/scripts
+
+# Make runtime-generated directories writable for appuser (DSL/Prisma + manifest updates).
+RUN chown -R appuser:appgroup /app/data/prisma /app/@typus-core/shared/dsl /app/typus-manifest.json /app/logs || true
 
 # Set environment variables
 ENV NODE_ENV=production
@@ -141,6 +169,9 @@ EXPOSE 80
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost/health || exit 1
+
+# Must run as root to bind :80 and to fix bind-mount ownership, but backend runs as appuser via supervisord.
+ENTRYPOINT ["/app/docker/scripts/entrypoint.sh"]
 
 # Start supervisord
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

@@ -56,7 +56,7 @@ services:
       - UPLOADS_PATH=/app/storage/uploads
     volumes:
       # Application code (no bind mounts in packaged release)
-      - ./storage:/app/storage
+      - storage:/app/storage
       - logs:/app/logs
       - nginx-logs:/var/log/nginx
     depends_on:
@@ -107,6 +107,8 @@ networks:
     name: ${COMPOSE_PROJECT_NAME:-typus}_local_network
 
 volumes:
+  storage:
+    name: ${COMPOSE_PROJECT_NAME:-typus}_storage
   mysql-data:
     name: ${COMPOSE_PROJECT_NAME:-typus}_mysql_data
   logs:
