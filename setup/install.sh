@@ -304,7 +304,16 @@ echo -e "${BLUE}Setting up database...${NC}"
 if docker ps --format '{{.Names}}' | grep -q "^${DB_HOST}$"; then
     echo "Detected MySQL container: ${DB_HOST}"
 
-    if docker exec ${DB_HOST} mysql -u${DB_USER} -p${DB_PASSWORD} -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null; then
+    SQL_CREATE_DB="CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    if [ -n "${DB_PASSWORD:-}" ]; then
+        if docker exec -i "${DB_HOST}" sh -c 'read -r MYSQL_PWD; export MYSQL_PWD; exec mysql -u "$1" -e "$2"' \
+          sh "${DB_USER}" "${SQL_CREATE_DB}" 2>/dev/null <<<"${DB_PASSWORD}"; then
+            echo -e "${GREEN}✓ Database '${DB_NAME}' ready${NC}"
+        else
+            echo -e "${YELLOW}⚠️  Could not auto-create database. You may need to create it manually:${NC}"
+            echo "   CREATE DATABASE ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        fi
+    elif docker exec "${DB_HOST}" mysql -u"${DB_USER}" -e "${SQL_CREATE_DB}" 2>/dev/null; then
         echo -e "${GREEN}✓ Database '${DB_NAME}' ready${NC}"
     else
         echo -e "${YELLOW}⚠️  Could not auto-create database. You may need to create it manually:${NC}"
@@ -334,7 +343,9 @@ CONTAINER_NAME=$(docker compose ps --format json 2>/dev/null | jq -r '.[0].Name'
 # Apply domain configuration using the LITE container's mysql client
 echo -e "${BLUE}Applying domain configuration to database...${NC}"
 
-if docker exec ${CONTAINER_NAME} sh -c "mysql -h\"\${DB_HOST}\" -u\"\${DB_USER}\" -p\"\${DB_PASSWORD}\" \"\${DB_NAME}\" -e \"UPDATE \\\`system.config_public\\\` SET value='https://${APP_DOMAIN}', updated_at=NOW() WHERE \\\`key\\\` IN ('site.url','site.base_url'); UPDATE \\\`system.config_public\\\` SET value='https://${APP_DOMAIN}/auth/google/callback', updated_at=NOW() WHERE \\\`key\\\`='integrations.google_callback_url'; UPDATE \\\`system.config_public\\\` SET value='https://${APP_DOMAIN}/api/social-media/auth/twitter/callback', updated_at=NOW() WHERE \\\`key\\\`='integrations.twitter_redirect_uri'; UPDATE \\\`system.config\\\` SET value='https://${APP_DOMAIN}', updated_at=NOW() WHERE \\\`key\\\` IN ('site.url','site.base_url');\"" >/dev/null 2>&1; then
+SQL_DOMAIN_UPDATES="UPDATE \\\`system.config_public\\\` SET value='https://${APP_DOMAIN}', updated_at=NOW() WHERE \\\`key\\\` IN ('site.url','site.base_url'); UPDATE \\\`system.config_public\\\` SET value='https://${APP_DOMAIN}/auth/google/callback', updated_at=NOW() WHERE \\\`key\\\`='integrations.google_callback_url'; UPDATE \\\`system.config_public\\\` SET value='https://${APP_DOMAIN}/api/social-media/auth/twitter/callback', updated_at=NOW() WHERE \\\`key\\\`='integrations.twitter_redirect_uri'; UPDATE \\\`system.config\\\` SET value='https://${APP_DOMAIN}', updated_at=NOW() WHERE \\\`key\\\` IN ('site.url','site.base_url');"
+if docker exec "${CONTAINER_NAME}" sh -c 'export MYSQL_PWD="${DB_PASSWORD:-}"; mysql -h"${DB_HOST}" -u"${DB_USER}" "${DB_NAME}" -e "$1"' \
+  sh "${SQL_DOMAIN_UPDATES}" >/dev/null 2>&1; then
     echo -e "${GREEN}✓ Domain configuration updated to https://${APP_DOMAIN}${NC}"
 else
     echo -e "${YELLOW}⚠️  Failed to update domain configuration automatically. Please adjust values manually in Settings → Site.${NC}"

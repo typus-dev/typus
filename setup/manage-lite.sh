@@ -224,7 +224,12 @@ database_menu() {
                 echo -e "${BLUE}Creating database backup...${NC}"
                 BACKUP_FILE="backup_$(date +%Y%m%d_%H%M%S).sql"
                 if [ -n "$DATABASE_URL" ]; then
-                    docker exec common-mysql mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" "${DB_NAME:-klim_expert_db}" > "$PROJECT_DIR/$BACKUP_FILE"
+                    if [ -n "${MYSQL_ROOT_PASSWORD:-}" ]; then
+                        docker exec -i common-mysql sh -c 'read -r MYSQL_PWD; export MYSQL_PWD; exec mysqldump -u root "$1"' \
+                          sh "${DB_NAME:-klim_expert_db}" <<<"${MYSQL_ROOT_PASSWORD}" > "$PROJECT_DIR/$BACKUP_FILE"
+                    else
+                        docker exec common-mysql mysqldump -u root "${DB_NAME:-klim_expert_db}" > "$PROJECT_DIR/$BACKUP_FILE"
+                    fi
                     echo -e "${GREEN}✓ Backup saved: $BACKUP_FILE${NC}"
                 else
                     echo -e "${RED}DATABASE_URL not set${NC}"

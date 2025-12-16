@@ -182,7 +182,9 @@ fi
 if [ -n "$DB_NAME" ] && [ -n "$DB_PASSWORD" ]; then
     echo -e "${BLUE}📦 Backing up database...${NC}"
     DB_BACKUP="$BACKUP_DIR/${DB_NAME}_${TIMESTAMP}.sql.gz"
-    docker exec $DB_HOST mysqldump -u $DB_USER -p$DB_PASSWORD $DB_NAME 2>/dev/null | gzip > "$DB_BACKUP" || true
+    # Avoid leaking password in process args: pass via stdin → MYSQL_PWD inside container.
+    docker exec -i "$DB_HOST" sh -c 'read -r MYSQL_PWD; export MYSQL_PWD; exec mysqldump -u "$1" "$2"' sh "$DB_USER" "$DB_NAME" 2>/dev/null \
+      <<<"$DB_PASSWORD" | gzip > "$DB_BACKUP" || true
     if [ -s "$DB_BACKUP" ]; then
         DB_BACKUP_SIZE=$(du -h "$DB_BACKUP" | cut -f1)
         echo -e "${GREEN}✓ Database backed up: $(basename $DB_BACKUP) ($DB_BACKUP_SIZE)${NC}"
@@ -205,7 +207,10 @@ if [ "$FRESH_INSTALL" = true ]; then
         exit 1
     fi
     if [ -n "$DB_NAME" ] && [ -n "$DB_PASSWORD" ]; then
-        docker exec $DB_HOST mysql -u $DB_USER -p$DB_PASSWORD -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;" 2>/dev/null
+        # Avoid leaking password in process args: pass via stdin → MYSQL_PWD inside container.
+        SQL="DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"
+        docker exec -i "$DB_HOST" sh -c 'read -r MYSQL_PWD; export MYSQL_PWD; exec mysql -u "$1" -e "$2"' sh "$DB_USER" "$SQL" 2>/dev/null \
+          <<<"$DB_PASSWORD"
         echo -e "${GREEN}✓ Database reset${NC}"
     fi
 fi
