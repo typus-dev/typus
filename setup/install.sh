@@ -244,12 +244,22 @@ run_mysql_command() {
     local sql="$1"
 
     if command -v mysql >/dev/null 2>&1; then
-        mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_USER}" "-p${DB_PASSWORD}" "${DB_NAME}" -e "${sql}" >/dev/null 2>&1
+        if [ -n "${DB_PASSWORD:-}" ]; then
+            MYSQL_PWD="${DB_PASSWORD}" mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_USER}" "${DB_NAME}" -e "${sql}" >/dev/null 2>&1
+        else
+            mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_USER}" "${DB_NAME}" -e "${sql}" >/dev/null 2>&1
+        fi
         return $?
     fi
 
     if docker ps --format '{{.Names}}' | grep -q "^${DB_HOST}$"; then
-        docker exec "${DB_HOST}" mysql -u "${DB_USER}" "-p${DB_PASSWORD}" "${DB_NAME}" -e "${sql}" >/dev/null 2>&1
+        if [ -n "${DB_PASSWORD:-}" ]; then
+            # Avoid leaking password in process args: pass via stdin → MYSQL_PWD inside container.
+            docker exec -i "${DB_HOST}" sh -c 'read -r MYSQL_PWD; export MYSQL_PWD; exec mysql -u "$1" "$2" -e "$3"' \
+              sh "${DB_USER}" "${DB_NAME}" "${sql}" >/dev/null 2>&1 <<<"${DB_PASSWORD}"
+        else
+            docker exec "${DB_HOST}" mysql -u "${DB_USER}" "${DB_NAME}" -e "${sql}" >/dev/null 2>&1
+        fi
         return $?
     fi
 
