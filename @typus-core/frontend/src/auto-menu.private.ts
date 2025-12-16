@@ -449,6 +449,24 @@ export const autoNavigationItems = [
     ]
   },
   {
+    id: 'ai-agent',
+    title: 'AI Agent',
+    icon: 'ri:robot-line',
+    isOpen: true,
+    items: [
+      {
+        title: 'Chat',
+        path: '/ai-agent',
+        icon: 'ri:chat-ai-line'
+      },
+      {
+        title: 'Logs',
+        path: '/ai-agent/logs',
+        icon: 'ri:file-list-3-line'
+      }
+    ]
+  },
+  {
     id: 'compass',
     title: 'Compass',
     icon: 'ri:compass-3-line',
@@ -468,24 +486,6 @@ export const autoNavigationItems = [
         title: 'Timeline View',
         path: '/compass/timeline',
         icon: 'ri:calendar-line'
-      }
-    ]
-  },
-  {
-    id: 'ai-agent',
-    title: 'AI Agent',
-    icon: 'ri:robot-line',
-    isOpen: true,
-    items: [
-      {
-        title: 'Chat',
-        path: '/ai-agent',
-        icon: 'ri:chat-ai-line'
-      },
-      {
-        title: 'Logs',
-        path: '/ai-agent/logs',
-        icon: 'ri:file-list-3-line'
       }
     ]
   },

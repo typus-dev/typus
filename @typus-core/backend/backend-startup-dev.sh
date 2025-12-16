@@ -86,19 +86,18 @@ pnpm --filter @typus-core/shared run dsl:generate-interfaces || {
 
 echo "📦 Step 3: Generating complete Prisma schema from DSL..."
 cd /app
-/app/@typus-core/backend/node_modules/.bin/tsx @typus-core/shared/scripts/generate-prisma-schemas.ts || {
+tsx @typus-core/shared/scripts/generate-prisma-schemas.ts || {
   echo "❌ Prisma schema generation failed!"
   exit 1
 }
 cd /app/@typus-core/backend
 
 echo "📦 Step 4: Generating Prisma client to generated/client..."
-cd /app/@typus-core/shared
-pnpm exec prisma generate --schema=/app/data/prisma/schemas/schema.prisma || {
+cd /app
+prisma generate --schema=/app/data/prisma/schemas/schema.prisma || {
   echo "❌ Prisma client generation failed!"
   exit 1
 }
-cd /app
 
 echo "⏳ Waiting for client generation to fully complete..."
 sleep 2

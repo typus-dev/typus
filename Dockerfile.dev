@@ -14,14 +14,17 @@ RUN apt-get update && apt-get install -y \
     jq \
     && rm -rf /var/lib/apt/lists/*
 
-# Install tsx globally for TypeScript execution and pnpm
-RUN npm install -g tsx pnpm
+# Install tsx globally for TypeScript execution, pnpm, and Prisma CLI for dev startup
+RUN npm install -g tsx pnpm prisma@6.8.2
 
 # Create app directory
 WORKDIR /app
 
 # Copy pnpm workspace files
 COPY pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json .npmrc ./
+
+# Root package.json is required for pnpm "overrides" to match pnpm-lock.yaml
+COPY package.json ./
 
 # Copy package files for dependency installation
 COPY @typus-core/backend/package.json @typus-core/backend/
