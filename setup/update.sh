@@ -3,11 +3,12 @@
 # =============================================================================
 # Typus LITE - Safe Update Script
 # =============================================================================
-# Usage: ./update.sh [--fresh]
+# Usage: ./update.sh [--fresh] [--help]
 #
 # Options:
 #   --fresh    Clean install with database reset (DESTRUCTIVE!)
 #              Without this flag, only updates core, preserves everything
+#   --help     Show this help and exit
 #
 # What it does:
 #   1. Full backup of site directory (excluding storage/uploads)
@@ -39,8 +40,44 @@ NC='\033[0m'
 
 # Parse arguments
 FRESH_INSTALL=false
-if [ "${1:-}" = "--fresh" ]; then
-    FRESH_INSTALL=true
+SHOW_HELP=false
+
+print_help() {
+    sed -n '1,80p' "$0"
+    echo ""
+    echo "Examples:"
+    echo "  ./setup/update.sh"
+    echo "  ./setup/update.sh --fresh"
+}
+
+for arg in "$@"; do
+    case "$arg" in
+        --fresh)
+            FRESH_INSTALL=true
+            ;;
+        -h|--help)
+            SHOW_HELP=true
+            ;;
+        "")
+            ;;
+        -*)
+            echo -e "${RED}❌ Unknown option: ${arg}${NC}"
+            echo ""
+            print_help
+            exit 1
+            ;;
+        *)
+            echo -e "${RED}❌ Unexpected argument: ${arg}${NC}"
+            echo ""
+            print_help
+            exit 1
+            ;;
+    esac
+done
+
+if [ "$SHOW_HELP" = true ]; then
+    print_help
+    exit 0
 fi
 
 # Auto-detect installation directory (where this script is run from)
@@ -226,6 +263,26 @@ cleanup_temp_dir() {
 trap cleanup_temp_dir EXIT
 tar -xzf "$LATEST_RELEASE" -C "$TEMP_DIR"
 echo -e "${GREEN}✓ Release extracted to temp${NC}"
+
+# =============================================================================
+# STEP 3.5: Update setup scripts (self-update for next runs)
+# =============================================================================
+echo -e "${BLUE}🔄 Updating setup scripts (install/update tools)...${NC}"
+if [ -d "$TEMP_DIR/setup" ]; then
+    mkdir -p "$INSTALL_DIR/setup"
+    for f in update.sh install.sh manage-lite.sh quickstart.sh; do
+        if [ -f "$TEMP_DIR/setup/$f" ]; then
+            if [ -f "$INSTALL_DIR/setup/$f" ] && ! diff -q "$INSTALL_DIR/setup/$f" "$TEMP_DIR/setup/$f" >/dev/null 2>&1; then
+                cp "$INSTALL_DIR/setup/$f" "$INSTALL_DIR/setup/$f.bak.$TIMESTAMP" 2>/dev/null || true
+            fi
+            cp "$TEMP_DIR/setup/$f" "$INSTALL_DIR/setup/$f"
+            chmod +x "$INSTALL_DIR/setup/$f" 2>/dev/null || true
+        fi
+    done
+    echo -e "${GREEN}✓ setup scripts updated${NC}"
+else
+    echo -e "${YELLOW}⚠️  setup/ not found in release, skipping${NC}"
+fi
 
 # =============================================================================
 # STEP 4: Copy core files (overwrite)
