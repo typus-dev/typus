@@ -145,7 +145,8 @@ RUN chmod +x /app/@typus-core/backend/backend-startup-prod.sh
 
 # Runtime entrypoint: create appuser/appgroup and fix bind-mount permissions
 COPY docker/scripts/entrypoint.sh /app/docker/scripts/entrypoint.sh
-RUN chmod +x /app/docker/scripts/entrypoint.sh
+RUN sed -i 's/\r$//' /app/docker/scripts/entrypoint.sh \
+  && chmod +x /app/docker/scripts/entrypoint.sh
 
 # Create required directories
 RUN mkdir -p /app/storage/cache/html \
@@ -158,6 +159,9 @@ RUN mkdir -p /app/storage/cache/html \
 
 # Make runtime-generated directories writable for appuser (DSL/Prisma + manifest updates).
 RUN chown -R appuser:appgroup /app/data/prisma /app/@typus-core/shared/dsl /app/typus-manifest.json /app/logs || true
+
+# Windows safety: prevent CRLF line endings breaking runtime scripts inside the image.
+RUN find /app -type f \( -name "*.sh" -o -name "manage.sh" \) -exec sed -i 's/\r$//' {} + 2>/dev/null || true
 
 # Set environment variables
 ENV NODE_ENV=production

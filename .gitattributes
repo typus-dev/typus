@@ -1,0 +1,5 @@
+* text=auto
+
+# Critical: keep shell scripts LF on Windows to avoid "/usr/bin/env: 'bash\r'" in Docker.
+*.sh text eol=lf
+manage.sh text eol=lf
