@@ -86,17 +86,35 @@ interface EnvConfig {
   TOGETHER_MODEL: string;
 }
 
-const getEnv = (key: string, fallback?: any): any => {
+/**
+ * Get required environment variable - throws if not defined
+ */
+const getEnvRequired = (key: string): string => {
   const value = process.env[key];
-
   if (value === undefined) {
-    if (fallback !== undefined) {
-      console.warn(`Environment variable ${key} is not defined, using fallback value`);
-      return fallback;
-    }
     throw new Error(`Environment variable ${key} is not defined`);
   }
   return value;
+};
+
+/**
+ * Get optional environment variable - returns fallback silently
+ * Use DEBUG_ENV=true to log fallback usage
+ */
+const getEnvOptional = (key: string, fallback: any = ''): any => {
+  const value = process.env[key];
+  if (value === undefined) {
+    if (process.env.DEBUG_ENV === 'true') {
+      console.debug(`[env] ${key} not set, using fallback`);
+    }
+    return fallback;
+  }
+  return value;
+};
+
+// Legacy wrapper for backward compatibility
+const getEnv = (key: string, fallback?: any): any => {
+  return fallback !== undefined ? getEnvOptional(key, fallback) : getEnvRequired(key);
 };
 
 const serverPort = parseInt(getEnv('SERVER_PORT'), 10);

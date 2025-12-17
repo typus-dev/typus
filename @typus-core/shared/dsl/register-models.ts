@@ -3,6 +3,13 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { registry } from './registry/index.js';
 
+// Debug logging helper - only logs when DEBUG_DSL=true
+const dslLog = (...args: any[]) => {
+  if (typeof process !== 'undefined' && process.env?.DEBUG_DSL === 'true') {
+    console.log(...args);
+  }
+};
+
 /**
  * Automatically scan and register all models from models directory
  */
@@ -11,7 +18,7 @@ export async function registerAllModels(): Promise<void> {
   const __dirname = dirname(__filename);
   const modelsDir = join(__dirname, 'models');
 
-  console.log('[registerAllModels] Scanning core models directory:', modelsDir);
+  dslLog('[registerAllModels] Scanning core models directory:', modelsDir);
 
   try {
     // Scan core models
@@ -19,7 +26,7 @@ export async function registerAllModels(): Promise<void> {
 
     // Scan plugin models
     const pluginsDir = join(__dirname, '..', '..', '..', 'plugins');
-    console.log('[registerAllModels] Scanning plugins directory:', pluginsDir);
+    dslLog('[registerAllModels] Scanning plugins directory:', pluginsDir);
     await scanPluginModels(pluginsDir);
 
     // Check for cyclic dependencies
@@ -31,8 +38,8 @@ export async function registerAllModels(): Promise<void> {
       });
     }
 
-    console.log(`✅ Registered ${registry.getModelNames().length} models total`);
-    console.log(registry.getModelNames().join(', '));
+    console.log(`✅ DSL: ${registry.getModelNames().length} models registered`);
+    dslLog('[registerAllModels] Models:', registry.getModelNames().join(', '));
   } catch (error) {
     console.error('[registerAllModels] Error scanning models:', error);
   }
@@ -54,7 +61,7 @@ async function scanAndRegisterModels(dir: string): Promise<void> {
     } else if (item.endsWith('.model.ts') || item.endsWith('.model.js')) {
       // Import and register model file
       try {
-        console.log(`[registerAllModels] Loading model file: ${fullPath}`);
+        dslLog(`[registerAllModels] Loading model file: ${fullPath}`);
 
         // Convert absolute path to relative import path
         const __filename = fileURLToPath(import.meta.url);
@@ -67,7 +74,7 @@ async function scanAndRegisterModels(dir: string): Promise<void> {
         // Look for exported models (convention: ends with 'Model')
         for (const [exportName, exportValue] of Object.entries(modelModule)) {
           if (exportName.endsWith('Model') && exportValue && typeof exportValue === 'object') {
-            console.log(`[registerAllModels] Found model: ${exportName}`);
+            dslLog(`[registerAllModels] Found model: ${exportName}`);
             // Register the model with the registry (skip if already registered from self-registration)
             registry.registerModel(exportValue as any, true);
           }
@@ -85,12 +92,12 @@ async function scanAndRegisterModels(dir: string): Promise<void> {
 async function scanPluginModels(pluginsDir: string): Promise<void> {
   // Check if plugins directory exists
   if (!existsSync(pluginsDir)) {
-    console.log('[scanPluginModels] Plugins directory not found:', pluginsDir);
+    dslLog('[scanPluginModels] Plugins directory not found:', pluginsDir);
     return;
   }
 
   const plugins = readdirSync(pluginsDir);
-  console.log(`[scanPluginModels] Found ${plugins.length} plugin(s)`);
+  dslLog(`[scanPluginModels] Found ${plugins.length} plugin(s)`);
 
   for (const pluginName of plugins) {
     const pluginPath = join(pluginsDir, pluginName);
@@ -104,12 +111,12 @@ async function scanPluginModels(pluginsDir: string): Promise<void> {
     const pluginModelsDir = join(pluginPath, 'shared', 'dsl');
 
     if (!existsSync(pluginModelsDir)) {
-      console.log(`[scanPluginModels] No models in plugin: ${pluginName}`);
+      dslLog(`[scanPluginModels] No models in plugin: ${pluginName}`);
       continue;
     }
 
-    console.log(`[scanPluginModels] Scanning plugin: ${pluginName}`);
-    console.log(`[scanPluginModels] Models directory: ${pluginModelsDir}`);
+    dslLog(`[scanPluginModels] Scanning plugin: ${pluginName}`);
+    dslLog(`[scanPluginModels] Models directory: ${pluginModelsDir}`);
 
     // Scan models in this plugin
     const modelFiles = readdirSync(pluginModelsDir);
@@ -122,7 +129,7 @@ async function scanPluginModels(pluginsDir: string): Promise<void> {
       const modelFilePath = join(pluginModelsDir, modelFile);
 
       try {
-        console.log(`[scanPluginModels] Loading plugin model: ${pluginName}/${modelFile}`);
+        dslLog(`[scanPluginModels] Loading plugin model: ${pluginName}/${modelFile}`);
 
         // Import using file:// URL for absolute path
         const fileUrl = `file://${modelFilePath.replace('.ts', '.js')}`;
@@ -131,7 +138,7 @@ async function scanPluginModels(pluginsDir: string): Promise<void> {
         // Look for exported models (convention: ends with 'Model')
         for (const [exportName, exportValue] of Object.entries(modelModule)) {
           if (exportName.endsWith('Model') && exportValue && typeof exportValue === 'object') {
-            console.log(`[scanPluginModels] ✅ Found plugin model: ${pluginName}/${exportName}`);
+            dslLog(`[scanPluginModels] Found plugin model: ${pluginName}/${exportName}`);
             // Register the model with the registry (skip if already registered from self-registration)
             registry.registerModel(exportValue as any, true);
           }

@@ -13,14 +13,13 @@
  */
 
 import { DslModel } from './types.js'; // Added .js extension
-// Cannot import backend logger into shared code
-// import { Logger } from '@/core/logger/Logger'; 
 
-// Create a logger instance specifically for the registry
-// Note: This might cause issues if logger initialization depends on app context.
-// A better approach might be to pass logger via DI if possible, or use console.debug.
-// Using console.debug for safety.
-// const logger = new Logger('DslRegistry'); 
+// Debug logging helper - only logs when DEBUG_DSL=true
+const dslLog = (...args: any[]) => {
+  if (typeof process !== 'undefined' && process.env?.DEBUG_DSL === 'true') {
+    console.debug(...args);
+  }
+}; 
 
 /**
  * Registry for DSL models
@@ -31,7 +30,7 @@ class DslRegistry {
   private readonly instanceId: string = Math.random().toString(36).substring(2, 15); 
   
   constructor() {
-    console.debug(`[DslRegistry] Instance created with ID: ${this.instanceId}`);
+    dslLog(`[DslRegistry] Instance created with ID: ${this.instanceId}`);
   }
 
   /**
@@ -67,7 +66,7 @@ class DslRegistry {
       // During DSL generation, models self-register when imported
       // If skipIfExists is true, just log and skip re-registration
       if (skipIfExists) {
-        console.debug(
+        dslLog(
           `[DslRegistry Instance: ${this.instanceId}] Model "${model.name}" (key: "${key}") ` +
           `already registered by ${existingSource}, skipping duplicate registration`
         );
@@ -82,8 +81,7 @@ class DslRegistry {
       );
     }
 
-    // Using console.debug as logger might not be initialized when this shared code runs
-    console.debug(`[DslRegistry Instance: ${this.instanceId}] Registering model with key: "${key}"`);
+    dslLog(`[DslRegistry Instance: ${this.instanceId}] Registering model with key: "${key}"`);
     this.models.set(key, model);
   }
   
@@ -100,7 +98,7 @@ getModel(name: string, module?: string): DslModel | undefined {
 
   for (const [key, model] of this.models.entries()) {
     if (model.name === name) {
-      console.debug(`[DslRegistry Instance: ${this.instanceId}] Found model "${name}" by name, key: "${key}"`);
+      dslLog(`[DslRegistry Instance: ${this.instanceId}] Found model "${name}" by name, key: "${key}"`);
       return model;
     }
   }
@@ -134,9 +132,8 @@ getModel(name: string, module?: string): DslModel | undefined {
    * Get model names (returns keys, e.g., "blog.BlogPost")
    */
   getModelNames(): string[] {
-    // Using console.debug
     const keys = Array.from(this.models.keys());
-    console.debug(`[DslRegistry] Getting model names (keys):`, keys);
+    dslLog(`[DslRegistry] Getting model names (keys):`, keys);
     return keys;
   }
   
@@ -147,7 +144,7 @@ private getModelKey(model: DslModel | { name: string; module?: string }): string
   if (!model.module) {
     for (const [key, registeredModel] of this.models.entries()) {
       if (registeredModel.name === model.name) {
-        console.debug(`[DslRegistry Instance: ${this.instanceId}] Found model "${model.name}" with key "${key}"`);
+        dslLog(`[DslRegistry Instance: ${this.instanceId}] Found model "${model.name}" with key "${key}"`);
         return key;
       }
     }
@@ -163,9 +160,7 @@ private getModelKey(model: DslModel | { name: string; module?: string }): string
    *                       idempotent registration. See registerModel() for details.
    */
   registerMany(models: DslModel[], skipIfExists: boolean = false): void {
-    if (typeof globalThis !== 'undefined' && typeof globalThis.console === 'object' && typeof globalThis.console.debug === 'function') {
-      globalThis.console.debug(`[DslRegistry Instance: ${this.instanceId}] Registering multiple models: ${models.map(model => model.name).join(', ')}`);
-    }
+    dslLog(`[DslRegistry Instance: ${this.instanceId}] Registering multiple models: ${models.map(model => model.name).join(', ')}`);
     models.forEach(model => this.registerModel(model, skipIfExists));
   }
 
@@ -253,10 +248,10 @@ const GLOBAL_REGISTRY_KEY = Symbol.for('typus.dsl.registry');
 
 function getGlobalRegistry(): DslRegistry {
   if (!(globalThis as any)[GLOBAL_REGISTRY_KEY]) {
-    console.debug('[DslRegistry] Creating global singleton instance');
+    dslLog('[DslRegistry] Creating global singleton instance');
     (globalThis as any)[GLOBAL_REGISTRY_KEY] = new DslRegistry();
   } else {
-    console.debug('[DslRegistry] Reusing existing global singleton instance');
+    dslLog('[DslRegistry] Reusing existing global singleton instance');
   }
   return (globalThis as any)[GLOBAL_REGISTRY_KEY];
 }
