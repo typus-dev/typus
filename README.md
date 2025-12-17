@@ -2,14 +2,14 @@
 
 # TYPUS
 
-**TypeScript Framework for Rapid Application Development**
+**TypeScript full-stack app starter for building SaaS fast**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
 [![Vue 3](https://img.shields.io/badge/Vue-3.4-green)](https://vuejs.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
 
-[Demo](https://demo.typus.dev) • [Documentation](https://typus.dev/docs) • [YouTube](https://www.youtube.com/@typus_dev) • [GitHub](https://github.com/typus-dev/typus)
+[Demo](https://demo.typus.dev) • [Website](https://typus.dev) • [YouTube](https://www.youtube.com/@typus_dev) • [GitHub](https://github.com/typus-dev/typus)
 
 <br>
 
@@ -23,10 +23,11 @@
 
 ## What is Typus?
 
-Typus is an **AI-ready SaaS foundation** that lets you focus on business logic while everything else is ready:
+Typus is a **production-ready SaaS foundation** that lets you focus on business logic while core infrastructure is already in place:
 
-- **Authentication** — JWT, OAuth, 2FA
+- **Authentication** — JWT, OAuth, 2FA (TOTP)
 - **Admin Panel** — Vue 3 + TypeScript
+- **Permissions** — CASL roles/abilities
 - **Plugin Architecture** — Extend without touching core
 - **Auto-generated CRUD APIs** — Define model, get API
 - **Database DSL** — Schema-as-code
@@ -50,7 +51,16 @@ docker compose up -d --build
 # admin@localhost / admin12345
 ```
 
-**That's it.** No external database, no Traefik, no .env configuration required.
+**That's it.** No external database required outside Docker.
+
+---
+
+## How it runs locally
+
+By default it runs **2 containers**:
+
+- `typus_lite` — nginx + backend + frontend (single app container)
+- `mysql` — MySQL 8.0 database (separate container)
 
 ---
 
@@ -58,21 +68,27 @@ docker compose up -d --build
 
 | Feature | Description |
 |---------|-------------|
-| **Single Container** | nginx + backend + frontend in one container |
+| **2 Containers (default)** | app + mysql (no external DB required outside Docker) |
 | **3 Profiles** | local (laptop), dev (server), prod (production) |
 | **DSL Models** | Define schema → get API, types, validation |
 | **Plugin System** | Add features without touching core |
-| **AI Operations** | 33 built-in AI operations |
-| **Real-time** | WebSocket events, live updates |
+| **Real-time** | WebSocket events (Redis optional) |
+| **Queue System** | Background jobs (email/telegram handlers, etc.) |
 
 ---
 
 ## Deployment Profiles
 
 ```bash
-./manage.sh switch local   # Laptop/desktop (embedded MySQL)
-./manage.sh switch dev     # Development server (hot reload)
-./manage.sh switch prod    # Production server (optimized)
+# Local works out of the box:
+./manage.sh switch local
+
+# Dev/Prod require profile env files (they are gitignored by design):
+cp .env.example .env.dev
+cp .env.example .env.prod
+
+./manage.sh switch dev
+./manage.sh switch prod
 ```
 
 ---
@@ -96,10 +112,7 @@ docker compose up -d --build
 
 ## Documentation
 
-- [Getting Started](https://typus.dev/docs/getting-started)
-- [Architecture](https://typus.dev/docs/architecture)
-- [Plugin Development](https://typus.dev/docs/plugins)
-- [AI Operations](https://typus.dev/docs/ai-operations)
+Coming soon at [typus.dev/docs](https://typus.dev/docs)
 
 ---
 
