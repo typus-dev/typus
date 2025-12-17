@@ -1,129 +1,118 @@
-# Typus LITE v1.1.114
+<div align="center">
 
-Complete snapshot release for LITE profile with profile switching system.
+# TYPUS
 
+**TypeScript Framework for Rapid Application Development**
 
-## What's Included
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Vue 3](https://img.shields.io/badge/Vue-3.4-green)](https://vuejs.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
 
-- Single-container architecture: nginx + backend + frontend (managed by supervisord)
-- 3 deployment profiles: local, dev, prod
-- Profile switching via manage.sh
-- External MySQL database support (or embedded MySQL for local profile)
-- All LITE modules pre-installed:
-  - Backend: 17 modules (auth, cms, crm, email, newsletter, storage, system, etc.)
-  - Frontend: 13 modules (auth, cms, crm, file-manager, newsletter, routes, system, etc.)
-- Database queue (no Redis required)
-- Installation scripts (install.sh, quickstart.sh)
-- Workspace dependencies fixed for npm compatibility
+[Demo](https://demo.typus.dev) • [Documentation](https://typus.dev/docs) • [YouTube](https://www.youtube.com/@typus_dev) • [GitHub](https://github.com/typus-dev/typus)
+
+<br>
+
+[![Watch Trailer](https://img.youtube.com/vi/7yy904m0LJA/maxresdefault.jpg)](https://www.youtube.com/watch?v=7yy904m0LJA)
+
+*Click to watch trailer*
+
+</div>
+
+---
+
+## What is Typus?
+
+Typus is an **AI-ready SaaS foundation** that lets you focus on business logic while everything else is ready:
+
+- **Authentication** — JWT, OAuth, 2FA
+- **Admin Panel** — Vue 3 + TypeScript
+- **Plugin Architecture** — Extend without touching core
+- **Auto-generated CRUD APIs** — Define model, get API
+- **Database DSL** — Schema-as-code
+
+**Your job:** Add business logic. Everything else is ready.
+
+---
+
+## Quick Start
+
+```bash
+# Clone
+git clone https://github.com/typus-dev/typus.git
+cd typus
+
+# Start (zero-config localhost)
+docker compose up -d --build
+
+# Open
+# http://localhost:3000
+# admin@localhost / admin12345
+```
+
+**That's it.** No external database, no Traefik, no .env configuration required.
+
+---
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| **Single Container** | nginx + backend + frontend in one container |
+| **3 Profiles** | local (laptop), dev (server), prod (production) |
+| **DSL Models** | Define schema → get API, types, validation |
+| **Plugin System** | Add features without touching core |
+| **AI Operations** | 33 built-in AI operations |
+| **Real-time** | WebSocket events, live updates |
+
+---
 
 ## Deployment Profiles
 
-**Local Mode** (laptop/desktop):
-- Uses docker-compose.local.yml
-- Embedded MySQL container (no external database needed)
-- Direct port access: http://localhost:3000
-- No Traefik reverse proxy required
-
-**Dev Mode** (development server):
-- Uses docker-compose.dev.yml
-- Hot reload with bind mounts
-- External MySQL + Traefik
-- Access via domain with HTTPS
-
-**Production Mode** (production server):
-- Uses docker-compose.prod.yml
-- Standalone image with embedded code
-- External MySQL + Traefik
-- Optimized for performance
-
-	## Quick Start
-	
-	```bash
-	# Option A: GitHub clone (recommended)
-	git clone https://github.com/typus-dev/typus.git
-	cd typus
-	
-	# Option B: Release archive
-	# mkdir typus && tar -xzf lite-complete-1.1.114.tar.gz -C typus
-	# cd typus
-	
-	# Zero-config localhost (recommended)
-	# No external DB, no Traefik, no .env required
-	docker compose up -d --build
-
-# Open:
-#   http://localhost:3000
-# Login (local defaults):
-#   admin@localhost / admin12345
-
-# Reset everything (removes DB/uploads/cache):
-#   docker compose down -v
-```
-
-	## Manual Installation
-	
-	1. Extract and configure:
-	   ```bash
-	   mkdir typus && tar -xzf lite-complete-1.1.114.tar.gz -C typus
-	   cd typus
-	   cp .env.example .env
-	   # Edit .env for your database and secrets
-	   ```
-
-2. Choose and activate a profile:
-   ```bash
-   # For laptop/desktop (embedded MySQL):
-   ./manage.sh switch local
-
-   # For development server (external MySQL + hot reload):
-   ./manage.sh switch dev
-
-   # For production server (external MySQL):
-   ./manage.sh switch prod
-   ```
-
-3. Install dependencies and start:
-   ```bash
-   cd @typus-core/backend && npm install --production && cd ..
-   docker compose up -d
-   ```
-
-   Note: Database migrations run automatically on first container start.
-
-## Profile Management
-
 ```bash
-# Switch between profiles
-./manage.sh switch local   # Localhost mode
-./manage.sh switch dev     # Development mode
-./manage.sh switch prod    # Production mode
-
-# Check current profile
-./manage.sh status
-
-# Interactive menu
-./manage.sh
+./manage.sh switch local   # Laptop/desktop (embedded MySQL)
+./manage.sh switch dev     # Development server (hot reload)
+./manage.sh switch prod    # Production server (optimized)
 ```
 
-Profile switching:
-- Backs up current .env and docker-compose.yml
-- Copies profile files to active names
-- Requires container restart: `docker compose down && docker compose up -d`
+---
+
+## Tech Stack
+
+- **Backend:** Node.js, Express, Prisma, TypeScript
+- **Frontend:** Vue 3, Vite, TypeScript
+- **Database:** MySQL 8.0 (or embedded)
+- **Container:** Docker, supervisord
+
+---
 
 ## Requirements
 
 - Docker & Docker Compose
-- MySQL 8.0+ (external or use local profile with embedded MySQL)
-- Node.js 18+ and npm
 - 512MB+ RAM
 - ~500MB disk space
 
-## Package Type
+---
 
-This is a **STANDARD** snapshot:
-- Requires npm install during setup
-- Smaller download size
-- Uses file: protocol for local modules
-- Best for bandwidth-limited scenarios
+## Documentation
 
-## Generated: 2025-12-16T23:51:52.183Z
+- [Getting Started](https://typus.dev/docs/getting-started)
+- [Architecture](https://typus.dev/docs/architecture)
+- [Plugin Development](https://typus.dev/docs/plugins)
+- [AI Operations](https://typus.dev/docs/ai-operations)
+
+---
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+
+**Built with TypeScript, Vue 3, and lots of coffee**
+
+[typus.dev](https://typus.dev)
+
+</div>

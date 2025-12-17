@@ -64,6 +64,12 @@ export class Application {
   constructor() {
     // Set the centralized Prisma instance globally for compatibility
     global.prisma = prisma;
+
+    // Compatibility: some plugins/services still inject Prisma via tsyringe token "PrismaClient"
+    // (preferred pattern is BaseService -> global.prisma, but we keep this to avoid plugin boot failures)
+    if (!container.isRegistered('PrismaClient')) {
+      container.registerInstance('PrismaClient', prisma);
+    }
     
     this.registerSingletons(); // Register singletons first
 
