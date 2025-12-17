@@ -1,5 +1,6 @@
 # Environment files (contain secrets)
 .env
+.github_token
 .env.local
 .env.dev
 .env.prod
