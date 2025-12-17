@@ -255,6 +255,7 @@ export class InterfaceGenerator {
   private mapFieldType(field: DslField): string {
     switch (field.type) {
       case 'string':
+      case 'text':
         return 'string';
       case 'number':
         return 'number';
