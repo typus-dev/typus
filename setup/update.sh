@@ -390,6 +390,12 @@ if [ -f "$INSTALL_DIR/.env.update" ] || [ -f "$INSTALL_DIR/docker-compose.yml.up
     [ -f "$INSTALL_DIR/.env.update" ] && echo -e "  - .env.update"
     [ -f "$INSTALL_DIR/docker-compose.yml.update" ] && echo -e "  - docker-compose.yml.update"
     echo ""
+    echo -e "${CYAN}Suggested review commands:${NC}"
+    [ -f "$INSTALL_DIR/.env.update" ] && echo -e "  diff -u .env .env.update | less"
+    [ -f "$INSTALL_DIR/docker-compose.yml.update" ] && echo -e "  diff -u docker-compose.yml docker-compose.yml.update | less"
+    echo ""
+    echo -e "${YELLOW}Note:${NC} .update files are templates for manual merge (do not overwrite blindly on prod)."
+    echo ""
 fi
 
 # Show version

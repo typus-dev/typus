@@ -67,7 +67,18 @@ export abstract class BaseModule<TController, TService> extends CoreBase {
    * Returns authentication middleware.
    * @returns Authentication middleware
    */
-  protected auth() {
+  protected auth(...args: never[]) {
+    // WHY: this used to be auth() with no params while PaymentModule called this.auth('admin') on 28
+    // routes. The argument was silently discarded, so every "admin" payment route (including
+    // POST /tokens/add) was reachable by any authenticated user. tsx does not type-check at runtime,
+    // so the mistake was invisible. Fail loudly at route registration instead: roles go through
+    // this.roles([...]), never through auth().
+    if (args.length > 0) {
+      throw new Error(
+        `BaseModule.auth() takes no arguments (got ${JSON.stringify(args)}). ` +
+        `It only authenticates. For a role check use [this.auth(), this.roles(['admin'])].`
+      );
+    }
     return this.authMiddleware.authenticate();
   }
 

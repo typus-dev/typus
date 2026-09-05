@@ -10,7 +10,7 @@ export const systemMenu: MenuItem = {
     icon: 'ri:settings-3-line',
     layout: 'private',
     isOpen: true,
-    injectAfter: 'Role Management',
+    injectAfter: 'User Management',
     ability: {
         action: 'manage',
         subject: 'user'

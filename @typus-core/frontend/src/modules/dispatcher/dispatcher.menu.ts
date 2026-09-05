@@ -6,7 +6,7 @@ export const dispatcherMenu: MenuItem = {
    icon: 'ri:send-plane-line',
    layout: 'private',
    isOpen: true,
-   injectAfter: 'Tasks',
+   injectAfter: 'Dashboard',
    ability: {
        action: 'manage',
        subject: 'task'

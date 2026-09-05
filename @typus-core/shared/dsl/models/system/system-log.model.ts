@@ -131,9 +131,14 @@ export const SystemLogModel: DslModel = {
     }
   ],
 
+  // WHY read is admin-only (#2897): this table carries the application's own operational log, and the
+  // DSL grants an operation with no row condition, so `user` here meant every signed-in customer could
+  // read every log line the system ever wrote. It has a userId column, but scoping to "your own log
+  // rows" would be answering a question nobody asks: the only readers in the tree are workflow seed
+  // definitions, which run server-side, and the admin console.
   access: {
     create: ['admin'],
-    read: ['admin', 'user'],
+    read: ['admin'],
     update: ['admin'],
     delete: ['admin'],
     count: ['admin']

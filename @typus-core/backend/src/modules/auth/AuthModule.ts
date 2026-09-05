@@ -1,4 +1,5 @@
 import { BaseModule } from '../../core/base/BaseModule.js';
+import rateLimit from 'express-rate-limit';
 import { AuthController } from './controllers/AuthController';
 import { AuthService } from './services/AuthService';
 import { Module } from '../../core/decorators/component.js';
@@ -13,6 +14,20 @@ import { AuthMethodFactory } from './services/methods/AuthMethodFactory.js';
 import { AuthMethodService } from './services/AuthMethodService';
 import { SessionManagementService } from './services/SessionManagementService';
 
+
+// WHY: /verify/send mints a verification link token or a login code and mails it. It takes no auth,
+// so without a ceiling anyone can pump codes at any address: mailbox spam in the victim's name, a
+// brute-force surface on the 6-digit code, and provider cost on us. Keyed by address first (the
+// thing being attacked) and falling back to IP for malformed calls.
+const verifySendLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { error: { message: 'Too many verification requests. Try again in a little while.', code: 'RATE_LIMITED', status: 429 } },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { trustProxy: false },
+  keyGenerator: (req) => `verify-send:${String((req as any).body?.email || '').toLowerCase() || req.ip}`,
+});
 
 @Module({ path: 'auth' })
 export class AuthModule extends BaseModule<AuthController, AuthService> { // Add generic types
@@ -53,7 +68,7 @@ export class AuthModule extends BaseModule<AuthController, AuthService> { // Add
         this.router.post('/system-token', [], this.controller.exchangeSystemToken.bind(this.controller));
 
         // Verification
-        this.router.post('/verify/send', [], this.controller.sendVerification.bind(this.controller));
+        this.router.post('/verify/send', [verifySendLimiter], this.controller.sendVerification.bind(this.controller));
         this.router.post('/verify/confirm', [], this.controller.confirmVerification.bind(this.controller));
         this.router.post('/verify/token', [], this.controller.verifyTokenLink.bind(this.controller));
 

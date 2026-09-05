@@ -82,8 +82,10 @@ export class PrismaSchemaGenerator {
         generatedSchemas.push(schema);
         console.log(`✅ Generated schema for ${moduleName}: ${schema.fileName}`);
       } catch (error) {
+        // Not "continue with other modules": a schema missing a module is not a schema, and
+        // shipping one produces a database that does not match the code with nothing said out loud.
         console.error(`❌ Failed to generate schema for module ${moduleName}:`, error);
-        // Continue with other modules
+        throw error;
       }
     }
 
@@ -103,14 +105,27 @@ export class PrismaSchemaGenerator {
     const warnings: string[] = [];
     const modelContents: string[] = [];
 
+    // WHY THIS THROWS AND DOES NOT WARN. A model that cannot be generated used to be dropped from
+    // the schema with a warning, and the build carried on: the table was simply absent, the API
+    // still answered for the model, and the first sign was a Prisma error about something that does
+    // not exist. Two models in this tree had been in that state for months. The failures are
+    // collected first, so one run tells you about all of them instead of one per attempt.
+    const failures: string[] = [];
     for (const model of moduleModels) {
       try {
         const modelContent = this.generateSingleModel(model, allModels, options);
         modelContents.push(modelContent);
       } catch (error) {
-        warnings.push(`Failed to generate model ${model.name}: ${error}`);
-        console.warn(`⚠️ Warning: Failed to generate model ${model.name}:`, error);
+        const message = error instanceof Error ? error.message : String(error);
+        failures.push(`  ${model.name}: ${message}`);
       }
+    }
+
+    if (failures.length > 0) {
+      throw new Error(
+        `Module '${moduleName}': ${failures.length} model(s) could not be generated.\n` +
+        failures.join('\n')
+      );
     }
 
     // Generate junction models if needed
@@ -187,6 +202,7 @@ export class PrismaSchemaGenerator {
         }
 
         const options: PrismaFieldOptions = {
+          modelName: model.name,
           isPrimaryKey: field.primaryKey,
           isUnique: field.unique,
           isAutoIncrement: field.autoincrement,

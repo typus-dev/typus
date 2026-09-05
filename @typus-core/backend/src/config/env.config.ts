@@ -21,6 +21,7 @@ interface EnvConfig {
   NODE_ENV: 'development' | 'test' | 'production';
   PORT: number;
   SERVER_PORT: number;
+  TRUST_PROXY: string;
   HOST: string;
   DB_HOST: string;
   DB_PORT: number;
@@ -136,6 +137,10 @@ export const env: EnvConfig = {
   PORT: serverPort,
   SERVER_PORT: serverPort,
   HOST: getEnv('HOST'),
+  // How many reverse proxies stand in front of this process. Application.ts explains what a wrong
+  // value costs; the short version is that too low makes every visitor share one rate-limit bucket.
+  // Default 1 = a single reverse proxy, the shape every shipped profile has.
+  TRUST_PROXY: getEnv('TRUST_PROXY', '1'),
   DB_HOST: getEnv('DB_HOST'),
   DB_PORT: parseInt(getEnv('DB_PORT'), 10),
   DB_NAME: getEnv('DB_NAME'),

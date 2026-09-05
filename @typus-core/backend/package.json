@@ -23,7 +23,7 @@
     "watch": "tsc -w"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@casl/ability": "^6.7.3",
     "@prisma/client": "^6.4.1",

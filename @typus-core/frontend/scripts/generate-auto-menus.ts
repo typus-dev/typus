@@ -12,7 +12,13 @@ const pluginsDir = path.join(projectRoot, '..', '..', 'plugins');
 const outputDir = path.join(projectRoot, 'src');
 const layoutsDir = path.join(projectRoot, 'src', 'layouts');
 const menuFilePattern = path.join(modulesDir, '**', '*.menu.ts').replace(/\\/g, '/');
-const pluginMenuFilePattern = path.join(pluginsDir, '**', 'frontend', '*.menu.ts').replace(/\\/g, '/');
+// Exactly one level down, like every other scanner in the engine: a plugin is plugins/<name>/,
+// and its menu is plugins/<name>/frontend/*.menu.ts. This pattern used to be '**', which reached
+// INTO plugins, so the example plugin's TEMPLATE -- a directory that exists to be copied, not to
+// run -- was collected as a real menu entry of the running application. It stayed invisible only
+// because the template was missing the `layout` the collector requires: one defect was hiding
+// another, and fixing the template alone would have put 'Example Template' in everyone's menu.
+const pluginMenuFilePattern = path.join(pluginsDir, '*', 'frontend', '*.menu.ts').replace(/\\/g, '/');
 const generatedFilePrefix = 'auto-menu.';
 const generatedFileSuffix = '';
 const generatedExportName = 'autoNavigationItems';
@@ -81,19 +87,50 @@ async function findMenuFiles(): Promise<string[]> {
   return enabledFiles;
 }
 
+/**
+ * Anything a person plausibly meant as a menu entry.
+ *
+ * WHY THIS EXISTS: the collector below keeps only exports that have `layout`, and everything else
+ * was dropped without a word. So the single most common mistake -- writing a menu entry and
+ * forgetting `layout` -- produced no file, no warning and no menu, and the author had nothing to
+ * read. An export that carries a title, a path or child items was clearly intended as one, and if
+ * it cannot be used we say so, by name.
+ */
+function looksLikeMenuItem(exp: any): boolean {
+  return exp !== null
+    && typeof exp === 'object'
+    && !Array.isArray(exp)
+    && ('title' in exp || 'label' in exp || 'path' in exp || 'items' in exp || 'children' in exp);
+}
+
+// Collected while importing, reported together at the end so one run lists every broken entry.
+const menuProblems: string[] = [];
+
 // Import menu items from a file
 async function importMenuModule(filePath: string): Promise<MenuItem[]> {
   try {
     const mod = await import(filePath);
-    return Object.values(mod).filter(
-      (exp): exp is MenuItem => 
-        exp !== null && 
-        typeof exp === 'object' && 
-        'layout' in exp
-    );
+    const usable: MenuItem[] = [];
+
+    for (const [exportName, exp] of Object.entries(mod)) {
+      if (exp !== null && typeof exp === 'object' && 'layout' in (exp as any)) {
+        usable.push(exp as MenuItem);
+        continue;
+      }
+      if (looksLikeMenuItem(exp)) {
+        const named = (exp as any).title ?? (exp as any).label ?? exportName;
+        menuProblems.push(
+          `${filePath}: export '${exportName}' ("${named}") has no layout, so it cannot be placed in ` +
+          `any menu. Add layout: 'private' (or another directory name under src/layouts). ` +
+          `Note the label field is 'title'.`
+        );
+      }
+    }
+
+    return usable;
   } catch (error) {
     console.error(`Error importing menu module ${filePath}:`, error);
-    return [];
+    throw error;
   }
 }
 
@@ -183,10 +220,18 @@ function processMenuItems(allItems: MenuItem[]): MenuItem[] {
   }
 
   // Any remaining items couldn't be inserted
+  // An injectAfter that names nothing is a placement nobody will notice is wrong: the entry lands
+  // at the end of the menu, next to whatever happens to be last, and looks deliberate. Two entries
+  // in this tree were in that state -- one of them anchored on its OWN child, which can never
+  // resolve. Collected as a problem, which stops generation, so the author fixes the anchor rather
+  // than discovering the menu is subtly wrong months later.
   if (deferred.length > 0) {
-    console.warn(`Could not resolve injectAfter for ${deferred.length} items. Placing at end.`);
     for (const item of deferred) {
-      console.warn(`- ${item.title} (injectAfter: "${item.injectAfter}")`);
+      menuProblems.push(
+        `menu entry "${item.title}" has injectAfter: "${item.injectAfter}", and no entry with that ` +
+        `id or title exists. Anchor it on an entry that is really there, or drop injectAfter to ` +
+        `place it at the end deliberately.`
+      );
       result.push(item);
     }
   }
@@ -238,7 +283,9 @@ async function generateMenus(): Promise<void> {
       
       for (const item of menuItems) {
         if (!item.layout) {
-          console.warn(`Menu item "${item.title}" is missing layout property. Skipping.`);
+          // Unreachable now that the collector reports these; kept so a future change to the
+          // collector cannot quietly restore the old silence.
+          menuProblems.push(`menu item "${item.title}" reached generation without a layout`);
           continue;
         }
         
@@ -293,6 +340,16 @@ async function generateMenus(): Promise<void> {
       }
     }
     
+    if (menuProblems.length > 0) {
+      console.error('');
+      console.error(`Menu generation refused: ${menuProblems.length} export(s) look like menu entries but cannot be used.`);
+      for (const problem of menuProblems) {
+        console.error(`  - ${problem}`);
+      }
+      console.error('');
+      process.exit(1);
+    }
+
     console.log('Menu generation completed successfully.');
   } catch (error) {
     console.error('Menu generation failed:', error);

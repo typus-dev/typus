@@ -5,6 +5,7 @@ import { Request } from 'express';
 import { EmailService } from '../../email/services/EmailService.js';
 import { AuthService } from './AuthService';
 import { TwoFactorAuth } from './methods/TwoFactorAuth.js';
+import { AuthHelperService } from './AuthHelperService.js';
 import crypto from 'crypto';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../../../core/base/BaseError.js';
 import jwt from 'jsonwebtoken';
@@ -21,7 +22,8 @@ export class VerificationService extends BaseService {
     constructor(
         @inject(EmailService) private emailService: EmailService,
         @inject(AuthService) private authService: AuthService,
-        @inject(TwoFactorAuth) private twoFactorAuth: TwoFactorAuth
+        @inject(TwoFactorAuth) private twoFactorAuth: TwoFactorAuth,
+        @inject(AuthHelperService) private authHelperService: AuthHelperService
     ) {
         super();
     }
@@ -391,7 +393,9 @@ export class VerificationService extends BaseService {
             where: { id: verificationCode.id }
         });
         
-        return { success: true, user };
+        // WHY: `user` is the raw prisma row - returning it published the bcrypt password hash to
+        // anyone completing a verification code or link. Same whitelist as every other auth response.
+        return { success: true, user: this.authHelperService.sanitizeUser(user) };
     }
 
     /**
@@ -468,7 +472,9 @@ export class VerificationService extends BaseService {
                 break;
         }
         
-        return { success: true, user };
+        // WHY: `user` is the raw prisma row - returning it published the bcrypt password hash to
+        // anyone completing a verification code or link. Same whitelist as every other auth response.
+        return { success: true, user: this.authHelperService.sanitizeUser(user) };
     }
 
     /**

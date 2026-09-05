@@ -1,6 +1,6 @@
 // src/core/middleware/ErrorHandlerMiddleware.ts
 import { Request, Response, NextFunction } from 'express';
-import { BaseError } from '../base/BaseError';
+import { BaseError } from '@/core/base/BaseError.js';
 import { ILogger } from '../logger/ILogger.js';
 import { LoggerFactory } from '../logger/LoggerFactory.js';
 import { ZodError } from 'zod';
@@ -21,11 +21,22 @@ export class ErrorHandlerMiddleware {
         method: req.method
       });
 
-      // Handle BaseError instances
-      if (err instanceof BaseError) {
-        return res.status(err.status).json({
+      // Handle BaseError instances.
+      // WHY the structural check: `instanceof` is per module instance, and this file and the code that
+      // throws (AuthMiddleware, services) import BaseError through different specifiers, so under
+      // tsx/ESM they can end up holding two different class objects. When that happens `instanceof`
+      // is false and a ForbiddenError (403) is reported to the client as a generic 500
+      // INTERNAL_ERROR -- which is exactly what "any user can mint tokens" looked like once the role
+      // check was added: the check worked, the status lied. Trust the shape, not the identity.
+      const typed = err as any;
+      const isTypedError =
+        err instanceof BaseError ||
+        (typed && typeof typed.status === 'number' && typeof typed.code === 'string' && typeof typed.toJSON === 'function');
+
+      if (isTypedError) {
+        return res.status(typed.status).json({
           success: false,
-          error: err.toJSON()
+          error: typed.toJSON()
         });
       }
 

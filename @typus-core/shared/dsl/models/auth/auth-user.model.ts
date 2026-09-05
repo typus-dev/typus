@@ -278,10 +278,20 @@ export const AuthUserModel: DslModel = {
     }
   ],
 
+  // ADMIN-ONLY over the DSL. WHY: the DSL grants a role a whole OPERATION on a model - there is no row
+  // condition and no field list (DslService.defineAbilityFor builds `can(action, model)` and nothing
+  // more). So `read: ['user']` meant any signed-in customer could read EVERY user row - password hash,
+  // otp and verification token included - and `update: ['user']` meant they could write any row's
+  // `role`, the exact column AuthMiddleware reads to decide who is an admin. Proven on prod
+  // (2026-07-21) with a throwaway account: one POST /api/dsl carrying
+  // {model:AuthUser, operation:update, filter:{id:self}, data:{role:admin}} returned 200 and that
+  // account was an admin from the next request onward.
+  // A user still edits their own profile, through PUT /api/users/:id - the one route that can express
+  // "my own row": it checks self-or-admin and refuses the privileged fields.
   access: {
     create: ['admin', 'public'],
-    read: ['admin', 'user'],
-    update: ['admin', 'user'],
+    read: ['admin'],
+    update: ['admin'],
     delete: ['admin'],
     count: ['admin']
   },

@@ -96,6 +96,28 @@ export const autoNavigationItems = [
         ]
       },
       {
+        id: 'dispatcher',
+        title: 'Dispatcher',
+        icon: 'ri:send-plane-line',
+        isOpen: true,
+        ability: {
+          action: 'manage',
+          subject: 'task'
+        },
+        items: [
+          {
+            title: 'Tasks',
+            path: '/dispatcher/tasks',
+            icon: 'ri:task-line'
+          },
+          {
+            title: 'Queues',
+            path: '/dispatcher/queues',
+            icon: 'ri:stack-line'
+          }
+        ]
+      },
+      {
         id: 'file-manager',
         title: 'File Manager',
         icon: 'ri-file-cloud-line',
@@ -257,6 +279,93 @@ export const autoNavigationItems = [
             icon: 'ri:gallery-line'
           }
         ]
+      },
+      {
+        id: 'system_management',
+        title: 'System',
+        icon: 'ri:settings-3-line',
+        isOpen: true,
+        ability: {
+          action: 'manage',
+          subject: 'user'
+        },
+        items: [
+          {
+            title: 'Dashboard',
+            path: '/system/dashboard',
+            icon: 'ri:dashboard-3-line'
+          },
+          {
+            title: 'Settings',
+            path: '/system/settings',
+            icon: 'ri:settings-4-line'
+          },
+          {
+            title: 'Theme Editor',
+            path: '/system/theme-editor',
+            icon: 'ri:palette-line'
+          },
+          {
+            title: 'Routes',
+            path: '/routes',
+            icon: 'ri:route-line'
+          },
+          {
+            title: 'Logs',
+            path: '/system/logs',
+            icon: 'ri:file-list-3-line'
+          }
+        ]
+      },
+      {
+        id: 'payments_management',
+        title: 'Billing',
+        icon: 'ri:wallet-3-line',
+        isOpen: false,
+        ability: {
+          action: 'manage',
+          subject: 'user'
+        },
+        items: [
+          {
+            title: 'Upgrade',
+            path: '/payments/upgrade',
+            icon: 'ri:vip-crown-line'
+          },
+          {
+            title: 'Subscription',
+            path: '/payments/subscription',
+            icon: 'ri:user-settings-line'
+          },
+          {
+            title: 'Token Balance',
+            path: '/payments/tokens',
+            icon: 'ri:coin-line'
+          },
+          {
+            title: 'Usage & Quotas',
+            path: '/payments/usage',
+            icon: 'ri:bar-chart-box-line'
+          },
+          {
+            title: 'Payment Config',
+            path: '/payments/admin/config',
+            icon: 'ri:settings-3-line',
+            ability: {
+              action: 'manage',
+              subject: 'admin'
+            }
+          },
+          {
+            title: 'Quota Management',
+            path: '/payments/admin/quotas',
+            icon: 'ri:dashboard-line',
+            ability: {
+              action: 'manage',
+              subject: 'admin'
+            }
+          }
+        ]
       }
     ]
   },
@@ -287,6 +396,12 @@ export const autoNavigationItems = [
         icon: 'ri:test-tube-line'
       }
     ]
+  },
+  {
+    id: 'feedback',
+    title: 'Feedback',
+    icon: 'ri:feedback-line',
+    path: '/feedback'
   },
   {
     id: 'demo-ui',
@@ -449,24 +564,6 @@ export const autoNavigationItems = [
     ]
   },
   {
-    id: 'ai-agent',
-    title: 'AI Agent',
-    icon: 'ri:robot-line',
-    isOpen: true,
-    items: [
-      {
-        title: 'Chat',
-        path: '/ai-agent',
-        icon: 'ri:chat-ai-line'
-      },
-      {
-        title: 'Logs',
-        path: '/ai-agent/logs',
-        icon: 'ri:file-list-3-line'
-      }
-    ]
-  },
-  {
     id: 'compass',
     title: 'Compass',
     icon: 'ri:compass-3-line',
@@ -490,111 +587,20 @@ export const autoNavigationItems = [
     ]
   },
   {
-    id: 'system_management',
-    title: 'System',
-    icon: 'ri:settings-3-line',
+    id: 'ai-agent',
+    title: 'AI Agent',
+    icon: 'ri:robot-line',
     isOpen: true,
-    ability: {
-      action: 'manage',
-      subject: 'user'
-    },
     items: [
       {
-        title: 'Dashboard',
-        path: '/system/dashboard',
-        icon: 'ri:dashboard-3-line'
-      },
-      {
-        title: 'Settings',
-        path: '/system/settings',
-        icon: 'ri:settings-4-line'
-      },
-      {
-        title: 'Theme Editor',
-        path: '/system/theme-editor',
-        icon: 'ri:palette-line'
-      },
-      {
-        title: 'Routes',
-        path: '/routes',
-        icon: 'ri:route-line'
+        title: 'Chat',
+        path: '/ai-agent',
+        icon: 'ri:chat-ai-line'
       },
       {
         title: 'Logs',
-        path: '/system/logs',
+        path: '/ai-agent/logs',
         icon: 'ri:file-list-3-line'
-      }
-    ]
-  },
-  {
-    id: 'dispatcher',
-    title: 'Dispatcher',
-    icon: 'ri:send-plane-line',
-    isOpen: true,
-    ability: {
-      action: 'manage',
-      subject: 'task'
-    },
-    items: [
-      {
-        title: 'Tasks',
-        path: '/dispatcher/tasks',
-        icon: 'ri:task-line'
-      },
-      {
-        title: 'Queues',
-        path: '/dispatcher/queues',
-        icon: 'ri:stack-line'
-      }
-    ]
-  },
-  {
-    id: 'payments_management',
-    title: 'Billing',
-    icon: 'ri:wallet-3-line',
-    isOpen: false,
-    ability: {
-      action: 'manage',
-      subject: 'user'
-    },
-    items: [
-      {
-        title: 'Upgrade',
-        path: '/payments/upgrade',
-        icon: 'ri:vip-crown-line'
-      },
-      {
-        title: 'Subscription',
-        path: '/payments/subscription',
-        icon: 'ri:user-settings-line'
-      },
-      {
-        title: 'Token Balance',
-        path: '/payments/tokens',
-        icon: 'ri:coin-line'
-      },
-      {
-        title: 'Usage & Quotas',
-        path: '/payments/usage',
-        icon: 'ri:bar-chart-box-line'
-      },
-      {
-        title: 'Payment Config',
-        path: '/payments/admin/config',
-        icon: 'ri:settings-3-line',
-        ability: {
-          action: 'manage',
-          subject: 'admin'
-        }
-      },
-      {
-        title: 'Quota Management',
-        path: '/payments/admin/quotas',
-        icon: 'ri:dashboard-line',
-        ability: {
-          action: 'manage',
-          subject: 'admin'
-        }
       }
     ]
   }

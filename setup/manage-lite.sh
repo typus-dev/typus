@@ -226,9 +226,9 @@ database_menu() {
                 if [ -n "$DATABASE_URL" ]; then
                     if [ -n "${MYSQL_ROOT_PASSWORD:-}" ]; then
                         docker exec -i common-mysql sh -c 'read -r MYSQL_PWD; export MYSQL_PWD; exec mysqldump -u root "$1"' \
-                          sh "${DB_NAME:-klim_expert_db}" <<<"${MYSQL_ROOT_PASSWORD}" > "$PROJECT_DIR/$BACKUP_FILE"
+                          sh "${DB_NAME:-typus_db}" <<<"${MYSQL_ROOT_PASSWORD}" > "$PROJECT_DIR/$BACKUP_FILE"
                     else
-                        docker exec common-mysql mysqldump -u root "${DB_NAME:-klim_expert_db}" > "$PROJECT_DIR/$BACKUP_FILE"
+                        docker exec common-mysql mysqldump -u root "${DB_NAME:-typus_db}" > "$PROJECT_DIR/$BACKUP_FILE"
                     fi
                     echo -e "${GREEN}✓ Backup saved: $BACKUP_FILE${NC}"
                 else

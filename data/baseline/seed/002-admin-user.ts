@@ -1,7 +1,7 @@
 /**
- * Admin User Seed
+ * Roles and admin user seed.
  *
- * Creates default admin role and admin user account.
+ * Creates the roles the engine itself refers to, then the admin account.
  * Password is taken from ADMIN_PASSWORD environment variable.
  * If not set, generates a random password and logs it.
  */
@@ -15,6 +15,49 @@ export async function seedAdminUser(prisma: PrismaClient) {
   // Get admin email from env or use default
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@typus';
 
+  const ensureRole = async (name: string, description: string, abilityRules: unknown[]) => {
+    const existing = await prisma.authRole.findFirst({ where: { name } });
+    if (existing) {
+      console.log(`    ℹ️  Role '${name}' already exists`);
+      return existing;
+    }
+    const created = await prisma.authRole.create({
+      data: {
+        name,
+        description,
+        deleted: false,
+        abilityRules: JSON.stringify(abilityRules),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
+    console.log(`    ✅ Role '${name}' created`);
+    return created;
+  };
+
+  // ROLES ARE SEEDED BEFORE, AND INDEPENDENTLY OF, THE ADMIN ACCOUNT.
+  //
+  // WHY 'user' has to exist: registration writes role: 'user' on every new account, and the engine
+  // reads that role BY NAME to build the caller's ability rules. A clean install seeded only 'admin',
+  // so every registered person pointed at a row that was not there: their abilityRules came back
+  // empty, the router guard denied every private page, and an upload died with "File not found"
+  // while the file was fine. Nobody noticed because nobody had installed the engine from scratch in
+  // months.
+  //
+  // WHY these two subjects and not 'all': the guard asks can('manage', route.meta.subject), and in
+  // the core the only subjects a signed-in person owns are their own profile and their own files.
+  // Everything else in the core -- auth, system, cms, dynamic-routes -- is an operator surface.
+  // 'manage' on 'all' would hand a customer the admin console. A product that adds user-facing
+  // pages adds its own subjects here.
+  await ensureRole('user', 'Registered user', [
+    { action: 'manage', subject: 'profile', inverted: false },
+    { action: 'manage', subject: 'storage', inverted: false }
+  ]);
+
+  const adminRole = await ensureRole('admin', 'Admin', [
+    { action: 'manage', subject: 'all', inverted: false }
+  ]);
+
   // Check if admin user already exists
   const existingUser = await prisma.authUser.findFirst({
     where: { email: adminEmail }
@@ -23,29 +66,6 @@ export async function seedAdminUser(prisma: PrismaClient) {
   if (existingUser) {
     console.log('    ℹ️  Admin user already exists, skipping');
     return;
-  }
-
-  // Create admin role (if not exists)
-  const existingRole = await prisma.authRole.findFirst({
-    where: { name: 'admin' }
-  });
-
-  let adminRole;
-  if (existingRole) {
-    adminRole = existingRole;
-    console.log('    ℹ️  Admin role already exists');
-  } else {
-    adminRole = await prisma.authRole.create({
-      data: {
-        name: 'admin',
-        description: 'Admin',
-        deleted: false,
-        abilityRules: JSON.stringify([{ action: 'manage', subject: 'all', inverted: false }]),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    });
-    console.log('    ✅ Admin role created');
   }
 
   // Get password from env or generate random

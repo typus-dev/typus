@@ -6,6 +6,7 @@ import { AuthHelperService } from './AuthHelperService';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../../../core/base/BaseError.js';
 import { Request } from 'express';
 import { TWO_FACTOR_METHODS } from '../constants';
+import { parseAbilityRules } from '@/core/security/abilityRules.js';
 /**
  * Service for handling user authentication
  */
@@ -105,20 +106,7 @@ export class AuthenticationService extends BaseService {
                     where: { name: user.role },
                     select: { abilityRules: true }
                 });
-                abilityRules = roleData?.abilityRules ?? null;
-                
-                this.logger.info('[AuthenticationService] Raw abilityRules from DB', { abilityRules });
-                
-                if (typeof abilityRules === 'string') {
-                    try {
-                        abilityRules = JSON.parse(abilityRules);
-                    } catch (e) {
-                        this.logger.warn('[AuthenticationService] Failed to parse abilityRules JSON', { error: e.message });
-                        abilityRules = [];
-                    }
-                } else if (abilityRules === true || abilityRules === null) {
-                    abilityRules = [];
-                }
+                abilityRules = parseAbilityRules(roleData?.abilityRules, user.role);
             }
             
             this.logger.debug('[AuthenticationService] Ability rules after normalization', { userId: user.id, abilityRules });

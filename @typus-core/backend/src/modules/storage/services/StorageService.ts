@@ -11,6 +11,7 @@ import { Ability } from '@casl/ability';
 import sharp from 'sharp';
 import fs from 'fs/promises';
 import path from 'path';
+import { parseAbilityRules } from '@/core/security/abilityRules.js';
 
 export interface FileUploadContext {
     moduleContext?: string;
@@ -54,16 +55,30 @@ export class StorageService extends BaseService {
         return result.data;
     }
 
-    private extractFirstRecord(data: any): any {
-        const fileRecord = Array.isArray(data) ? data[0] : data;
-        if (!fileRecord) {
-            throw new NotFoundError('File not found');
+    /**
+     * First row of a DSL result, or a refusal that says what was missing.
+     *
+     * WHY it takes a `what`: this used to say 'File not found' from every call site, including the two
+     * that read a USER and a ROLE. A clean install seeds no `user` role, so every upload by an ordinary
+     * person died with a message blaming a file that was fine, and the real cause -- a role row that
+     * does not exist -- was invisible. An error that names the wrong thing is worse than no error.
+     */
+    private extractFirstRecord(data: any, what: string = 'File'): any {
+        const record = Array.isArray(data) ? data[0] : data;
+        if (!record) {
+            throw new NotFoundError(`${what} not found`);
         }
-        return fileRecord;
+        return record;
     }
 
+    // A system identity for lookups the SERVICE makes about a user, not lookups the user makes. Both
+    // reads below are pinned to one id the service already holds and never leave this method: their
+    // only purpose is to build the ability rules the caller is then judged against. Running them as the
+    // caller means every ordinary user needs read access to AuthUser, which is the grant that leaked
+    // every password hash in this codebase once already.
+    private static readonly SYSTEM_LOOKUP = { id: 0, email: 'system@internal', roles: ['admin'], isSystemLookup: true };
+
     private async getUserDataById(userId: number, currentUser: any): Promise<any> {
-        // Get user data - pass currentUser for permission check
         const result = await this.dslService.executeOperation(
             'AuthUser',
             'read',
@@ -71,10 +86,10 @@ export class StorageService extends BaseService {
             { id: userId },
             undefined,
             undefined,
-            currentUser  // Pass full user object with roles for permission check
+            StorageService.SYSTEM_LOOKUP
         );
         const data = this.handleDslResult(result);
-        const user = this.extractFirstRecord(data);
+        const user = this.extractFirstRecord(data, `User ${userId}`);
 
         this.logger.debug('[StorageService] getUserDataById - raw user data', {
             userId,
@@ -91,10 +106,10 @@ export class StorageService extends BaseService {
                 { name: user.role },
                 undefined,
                 undefined,
-                currentUser  // Pass full user object with roles for permission check
+                StorageService.SYSTEM_LOOKUP
             );
             const roleData = this.handleDslResult(roleResult);
-            const role = this.extractFirstRecord(roleData);
+            const role = this.extractFirstRecord(roleData, `Role '${user.role}' (referenced by user ${userId}, but there is no such row in auth.roles)`);
 
             this.logger.debug('[StorageService] getUserDataById - role data', {
                 roleName: role.name,
@@ -103,11 +118,7 @@ export class StorageService extends BaseService {
                 abilityRulesRaw: role.abilityRules
             });
 
-            if (role.abilityRules) {
-                abilityRules = typeof role.abilityRules === 'string'
-                    ? JSON.parse(role.abilityRules)
-                    : role.abilityRules;
-            }
+            abilityRules = parseAbilityRules(role.abilityRules, role.name);
         }
 
         this.logger.info('[StorageService] getUserDataById - final result', {

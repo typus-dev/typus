@@ -76,7 +76,7 @@ export const NotificationsHistoryModel: DslModel = {
 
   access: {
     create: ['admin'],
-    read: ['admin', 'user'],
+    read: ['admin'], // WHY #2820: the bell reads via GET /api/notifications (service, scoped to req.user.id). A DSL read for role user returned EVERY user's notifications. Admin-only over DSL.
     update: ['admin'],
     delete: ['admin'],
     count: ['admin']

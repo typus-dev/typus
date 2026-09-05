@@ -208,11 +208,32 @@ export class TaskScheduler extends BaseService {
           periodSec: task.periodSec,
           nextRun
         });
-      } else if (task.scheduleType === 'cron' && task.cronExpr) {
-        // TODO: Implement cron expression parsing
-        // For now, set to 1 hour from now
-        nextRun = new Date(now.getTime() + 3600 * 1000);
-        this.logger.warn(`Cron parsing not implemented, using 1h interval for task ${task.id}`, { source: 'system' });
+      } else if (task.scheduleType === 'cron') {
+        // CRON IS NOT IMPLEMENTED, AND THIS NO LONGER PRETENDS OTHERWISE.
+        //
+        // What used to happen here: the expression was ignored and the task was quietly rescheduled
+        // one hour from now. A task set to run at 03:00 ran every hour, all day, and the only trace
+        // was a warning in a log nobody reads. For anything that sends mail, bills a customer or
+        // deletes old rows, "quietly ran 24 times instead of once" is the worst possible failure.
+        //
+        // So the task is stopped and says why, in the row itself, where whoever scheduled it looks.
+        // Use periodSec until a cron parser exists; the two are alternatives on the same row.
+        const reason = `scheduleType 'cron' is not supported by this engine (expression: ${task.cronExpr ?? 'none'}). ` +
+          `Set periodSec instead, or leave the task inactive. It has been deactivated so it cannot run on a schedule nobody asked for.`;
+
+        this.logger.error(`[TaskScheduler] Refusing to schedule task ${task.id}: ${reason}`, { source: 'system' });
+
+        await this.prisma.dispatcherTask.update({
+          where: { id: task.id },
+          data: {
+            lastRun: now,
+            nextRun: null,
+            lastStatus: 'error',
+            lastError: reason,
+            isActive: false
+          }
+        });
+        return;
       }
 
       await this.prisma.dispatcherTask.update({

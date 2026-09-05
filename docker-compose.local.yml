@@ -41,6 +41,14 @@ services:
       - ADMIN_EMAIL=admin@localhost
       - ADMIN_PASSWORD=admin12345
 
+      # Declare a model, restart, get a table. The schema generated from the DSL models is pushed
+      # to the database on every start. This is a laptop profile with a container-local database,
+      # so a push is right here and is what makes the documented workflow true; without it only the
+      # one baseline migration is applied and a model added afterwards silently has no table.
+      # Do NOT copy this line to a deployment holding data you care about: a push can drop a column
+      # that no longer exists in a model. There the value is `migrate`, which is the default.
+      - DB_SCHEMA_SYNC=push
+
       # Embedded MySQL (service "mysql" below)
       - DB_PROVIDER=mysql
       - DB_HOST=mysql

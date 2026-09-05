@@ -13,6 +13,8 @@
 import { DslField } from '../types.js';
 
 export interface PrismaFieldOptions {
+  /** Only so a refusal can name the model the bad field is in. */
+  modelName?: string;
   isPrimaryKey?: boolean;
   isUnique?: boolean;
   hasDefaultValue?: boolean;
@@ -31,26 +33,60 @@ export class FieldMapper {
   }
 
   /**
-   * Map DSL type to Prisma type
+   * Every field type the DSL accepts.
+   *
+   * Two vocabularies on purpose: the DSL's own lowercase names, and Prisma's native spellings,
+   * because someone who writes `Json` means Json and should not be silently given something else.
    */
-  private mapDslTypeToPrisma(dslType: string): string {
-    const typeMap: Record<string, string> = {
-      'string': 'String',
-      'int': 'Int', 
-      'Int': 'Int',
-      'float': 'Float',
-      'decimal': 'Decimal',       
-      'boolean': 'Boolean',
-      'datetime': 'DateTime',
-      'date': 'DateTime',
-      'json': 'Json',
-      'text': 'String',
-      'email': 'String',
-      'url': 'String',
-      'uuid': 'String'
-    };
+  private static readonly TYPE_MAP: Record<string, string> = {
+    // DSL vocabulary
+    'string': 'String',
+    'text': 'String',
+    'email': 'String',
+    'url': 'String',
+    'uuid': 'String',
+    'int': 'Int',
+    'float': 'Float',
+    'decimal': 'Decimal',
+    'boolean': 'Boolean',
+    'datetime': 'DateTime',
+    'date': 'DateTime',
+    'json': 'Json',
+    // Prisma's own names, accepted as written
+    'String': 'String',
+    'Int': 'Int',
+    'BigInt': 'BigInt',
+    'Float': 'Float',
+    'Decimal': 'Decimal',
+    'Boolean': 'Boolean',
+    'DateTime': 'DateTime',
+    'Json': 'Json',
+    'Bytes': 'Bytes'
+  };
 
-    return typeMap[dslType] || 'String';
+  /**
+   * Map a DSL type to a Prisma type, or refuse.
+   *
+   * WHY IT THROWS. This used to end in `|| 'String'`. A typo in a type, or a name the generator
+   * never knew, produced a String column with no warning anywhere: the model file read as correct,
+   * the table was wrong, and the mistake surfaced much later as data that would not fit or a
+   * comparison that behaved oddly. Measured on this tree the day the check was added: three fields
+   * in plugins/compass declared `Json`, a name the old map did not contain, and had been VARCHAR
+   * ever since. For a framework whose whole value is generating from a declaration, guessing at a
+   * declaration it does not understand is the worst available default.
+   */
+  private mapDslTypeToPrisma(dslType: string, fieldName?: string, modelName?: string): string {
+    const mapped = FieldMapper.TYPE_MAP[dslType];
+    if (!mapped) {
+      const where = modelName ? `${modelName}.${fieldName ?? '?'}` : (fieldName ?? 'a field');
+      throw new Error(
+        `Unknown DSL field type '${dslType}' on ${where}. ` +
+        `Accepted: ${Object.keys(FieldMapper.TYPE_MAP).join(', ')}. ` +
+        `If you meant a fixed set of values, the type is 'string' and the values go in ` +
+        `validation: [{ type: 'enum', value: [...] }].`
+      );
+    }
+    return mapped;
   }
 
   /**
@@ -221,7 +257,7 @@ export class FieldMapper {
    * Generate complete Prisma field definition
    */
   public generatePrismaField(field: DslField, options: PrismaFieldOptions = {}): string {
-    const prismaType = this.mapDslTypeToPrisma(field.type);
+    const prismaType = this.mapDslTypeToPrisma(field.type, field.name, options.modelName);
 
     // Field is optional if not required and not a primary key
     const isOptional = !field.required && !field.primaryKey && !options.isPrimaryKey;

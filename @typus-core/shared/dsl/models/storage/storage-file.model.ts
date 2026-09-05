@@ -132,6 +132,9 @@ export const StorageFileModel: DslModel = {
     operations: ['update', 'delete'],  // Removed 'read' - access control via Service layer
     adminBypass: true
   },
+  // WHY #2838: read grants anonymous so public files serve by id; scope anonymous LIST reads to
+  // PUBLIC so an unauthenticated POST /api/dsl can never enumerate private file metadata.
+  anonymousReadScope: { field: 'visibility', publicValue: 'PUBLIC' },
   config: {
     timestamps: true,
     softDelete: true

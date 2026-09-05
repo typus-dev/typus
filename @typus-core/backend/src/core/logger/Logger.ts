@@ -91,6 +91,14 @@ export class Logger implements ILogger {
         this.logger.level = config.level;
       }
 
+      // Apply the new FORMAT, not just the transports. The database log writer (createDatabaseFormat,
+      // which populates the WeakMap the DB transport reads) lives in the FORMAT chain. If reconfigure only
+      // swaps transports, a logger first built console-only keeps a format with no writer, so the DB
+      // transport reads an empty WeakMap and nothing is ever persisted (task #2699 / B11).
+      if ((config as any).format) {
+        (this.logger as any).format = (config as any).format;
+      }
+
       // Clear existing transports
       this.logger.clear();
 

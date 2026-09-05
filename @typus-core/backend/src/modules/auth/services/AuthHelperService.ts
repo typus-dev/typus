@@ -25,14 +25,35 @@ export class AuthHelperService extends BaseService {
         this.logger.info('[AuthHelperService] Initialized');
     }
 
+    // WHY: this used to blacklist exactly one field (password), so every new column on authUser
+    // was published to the client by default. That shipped `twoFactorSecret` (a TOTP secret in a
+    // JSON body is a second-factor bypass), `otp` and `verificationToken` in the login payload, and
+    // the bcrypt hash itself through the verification endpoints. A whitelist fails closed: a new
+    // column stays invisible until someone deliberately adds it here.
+    private static readonly PUBLIC_USER_FIELDS = [
+        'id', 'email', 'userName', 'firstName', 'lastName', 'middleName', 'avatarUrl',
+        'role', 'isAdmin', 'isApproved', 'isDeleted', 'isEmailVerified',
+        'isTwoFactorEnabled', 'twoFactorMethod', 'preferredTwoFactorMethod',
+        'phoneNumber', 'dateOfBirth', 'telegramChatId',
+        'emailNotifications', 'pushNotifications', 'telegramNotifications',
+        'googleId', 'lastLogin', 'lastActivity', 'createdAt', 'updatedAt',
+        'abilityRules',
+        // Admin-facing profile text the engine's own user editor reads (UserForm.vue). Listed because
+        // it is content, not credential; a field that is neither is left out and stays invisible.
+        'notes',
+    ];
+
     /**
-     * Remove sensitive data from user object
+     * Reduce a user row to the fields the client is allowed to see.
      */
-    async sanitizeUser(user) {
+    sanitizeUser(user) {
         if (!user) return {};
-        
-        const { password, ...sanitizedUser } = user;
-        return sanitizedUser;
+
+        const out: Record<string, any> = {};
+        for (const key of AuthHelperService.PUBLIC_USER_FIELDS) {
+            if (user[key] !== undefined) out[key] = user[key];
+        }
+        return out;
     }
 
     /**

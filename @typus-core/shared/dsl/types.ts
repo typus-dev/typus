@@ -150,6 +150,22 @@ export interface DslOwnership {
 }
 
 /**
+ * Anonymous read scoping (#2838)
+ *
+ * A model that grants anonymous read (StorageFile does, to serve public files by id via /:fileId)
+ * would otherwise return EVERY row to an unauthenticated POST /api/dsl: DslPreAuthMiddleware nulls
+ * the user for anonymous-allowed ops and the DSL grants an operation with no row condition. Declaring
+ * this makes anonymous reads (callers with no user.id) return only rows where field === publicValue.
+ *
+ * @example
+ * anonymousReadScope: { field: 'visibility', publicValue: 'PUBLIC' }
+ */
+export interface DslAnonymousReadScope {
+  field: string;
+  publicValue: string;
+}
+
+/**
  * Model type definition
  */
 export interface DslModel {
@@ -163,6 +179,7 @@ export interface DslModel {
   generatePrisma?: boolean;
   access?: DslAccessControl;
   ownership?: DslOwnership;
+  anonymousReadScope?: DslAnonymousReadScope;
   events?: DslEvents;  // Event emission configuration
   ui?: {
     displayName?: string;

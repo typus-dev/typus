@@ -34,10 +34,12 @@ export class Application {
   private server: Server;
   private port: number;
   private startTime = Date.now(); // Start time for stats
-  private stats = { // Application startup statistics
+  private stats: { modulesLoaded: number; warnings: number; errors: number; failures: string[] } = {
     modulesLoaded: 0,
     warnings: 0,
-    errors: 0
+    errors: 0,
+    // What failed, by name. The count alone told nobody which module lost its routes.
+    failures: []
   };
 
   // Register core services as singletons
@@ -74,7 +76,19 @@ export class Application {
     this.registerSingletons(); // Register singletons first
 
     this.app = express(); 
-    this.app.set('trust proxy', 1);
+    // HOW MANY PROXIES stand in front of this process is a property of the INSTALL, not of the engine,
+    // so it is configuration. Express counts hops from the RIGHT of X-Forwarded-For, and the number must
+    // equal the proxies you actually run: one reverse proxy is 1, a TLS terminator in front of an nginx
+    // inside the container is 2. Get it too low and req.ip resolves to your own proxy -- the same value
+    // for every visitor on earth -- which silently turns every per-IP rate limit into ONE GLOBAL BUCKET,
+    // where a single attacker locks out signup for everybody. This was measured on the explain.ink
+    // install on 2026-07-17: req.ip was 172.18.0.2 for all callers and stayed 172.18.0.2 even when the
+    // caller spoofed the header. Too high is the opposite failure: you start trusting a hop the client
+    // controls. Spoofing does not help at the correct value, because a client-supplied X-Forwarded-For
+    // ends up LEFT of the addresses the proxies append.
+    const trustProxy = parseInt(global.env.TRUST_PROXY, 10);
+    this.app.set('trust proxy', trustProxy);
+    console.log(`[Application] trust proxy = ${trustProxy} (TRUST_PROXY): req.ip is taken ${trustProxy} hop(s) from the right of X-Forwarded-For`);
 
     this.port = parseInt(global.env.SERVER_PORT, 10);
 
@@ -205,6 +219,16 @@ export class Application {
     
     // Use table method for statistics
     global.logger.table('Application Statistics', statsData, ['Metric', 'Value']);
+
+    // A number in a table is not a report. Anything that failed to load is named here, at the
+    // end of the boot log where a person actually looks, and the line says what it costs:
+    // "the application started" and "the application is complete" are not the same statement.
+    if (this.stats.failures.length > 0) {
+      global.logger.error(`❌ ${this.stats.failures.length} thing(s) did not load. Their routes, handlers or models do NOT exist in this process:`);
+      for (const failure of this.stats.failures) {
+        global.logger.error(`   - ${failure}`);
+      }
+    }
     
     global.logger.info('='.repeat(50));
   }

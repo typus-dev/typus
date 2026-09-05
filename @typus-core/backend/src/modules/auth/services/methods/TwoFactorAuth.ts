@@ -9,6 +9,7 @@ import * as crypto from 'crypto';
 import { EmailService } from '../../../email/services/EmailService.js';
 import { TokenService } from '../TokenService.js';
 import { TWO_FACTOR_METHODS, TWO_FACTOR_MESSAGES, TOKEN_EXPIRATION, AUTH_ERRORS, AUTH_SUCCESS } from '../../constants.js';
+import { parseAbilityRules } from '@/core/security/abilityRules.js';
 
 /**
  * Two-factor authentication method
@@ -134,20 +135,7 @@ export class TwoFactorAuth extends BaseService implements IAuthMethod {
         where: { name: userWithRole.role }
       });
       
-      // Extract abilityRules from roleData if it exists
-      if (roleData && roleData.abilityRules) {
-        abilityRules = roleData.abilityRules;
-        
-        // Parse if stored as string
-        if (typeof abilityRules === 'string') {
-          try {
-            abilityRules = JSON.parse(abilityRules);
-          } catch (e) {
-            this.logger.warn('[TwoFactorAuth] Failed to parse abilityRules JSON', { error: e.message });
-            abilityRules = [];
-          }
-        }
-      }
+      abilityRules = parseAbilityRules(roleData?.abilityRules, userWithRole.role);
     }
     
     // Remove password from user data

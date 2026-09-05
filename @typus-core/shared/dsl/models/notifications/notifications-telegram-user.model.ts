@@ -64,7 +64,7 @@ export const NotificationsTelegramUserModel: DslModel = {
 
   access: {
     create: ['admin'],
-    read: ['admin', 'user'],
+    read: ['admin'], // WHY #2820: no owner field to scope by; these are telegram chat ids. A DSL read for role user leaked every mapping. Admin-only.
     update: ['admin'],
     delete: ['admin'],
     count: ['admin']

@@ -24,6 +24,7 @@ import dxTable from '@/components/tables/dxTable/dxTable.vue';
 import dxText from '@/components/ui/dxText.vue';
 import dxRawHtml from '@/components/ui/dxRawHtml.vue';
 import dxFormJSON from '@/components/ui/dxFormJSON.vue';
+import dxFieldError from '@/components/system/dxFieldError.vue';
 
 
 const components = {
@@ -36,7 +37,8 @@ const components = {
   dxChart, 
   dxTable,
   dxRawHtml,
-  dxFormJSON
+  dxFormJSON,
+  dxFieldError
 };
 
 // Define component config type
@@ -134,6 +136,24 @@ if (blockContext) {
 }
 
 
+/**
+ * A field the renderer cannot build becomes a VISIBLE block, not a missing input.
+ *
+ * WHY: every one of the cases below used to end in `continue`. The field vanished, the form looked
+ * complete, and the only trace was a debug line. That is the exact failure this engine is being
+ * cured of: the screen was generated from a declaration it could not honour, and said nothing.
+ */
+const fieldError = (fieldName: string, reason: string): dsxComponentConfig => {
+  console.error(`[DSX] ${fieldName}: ${reason}`);
+  return {
+    type: dxFieldError,
+    id: `field-error-${fieldName}`,
+    props: { field: fieldName, reason },
+    _hasDataBinding: false
+  } as dsxComponentConfig;
+};
+
+
 const processAllFields = () => {
  logger.debug('[dsxBlockRendererWithContext] processAllFields START', { blockId: props.config.id });
  const fields: dsxComponentConfig[] = [];
@@ -151,10 +171,36 @@ const processAllFields = () => {
    return fields;
  }
 
+ // Does this model use the visibility convention at all?
+ //
+ // WHY THE DISTINCTION: a field with no ui.visibility is invisible on every screen, and until now
+ // that was a debug line. But most models in this tree declare no visibility anywhere, so treating
+ // each field as a mistake would paper a working screen with twenty identical complaints. If NO
+ // field declares one, the model simply does not use this mechanism, and that is worth saying ONCE.
+ // If some fields declare it and others do not, the ones that do not were forgotten, and each is
+ // worth saying on its own.
+ const usesVisibility = modelObject.fields.some(
+   (f: any) => Array.isArray(f?.ui?.visibility)
+ );
+
+ if (!usesVisibility) {
+   const modelName = modelObject.name ?? (props.config.model as any)?.name ?? 'this model';
+   fields.push(fieldError(
+     modelName,
+     `no field declares ui.visibility, so a form generated from this model has nothing to show. ` +
+     `Either add ui.visibility to the fields, or build this block from an explicit component list ` +
+     `instead of from the model.`
+   ));
+   return fields;
+ }
+
+
  for (const field of modelObject.fields) {
    // Check visibility
+   // No visibility list at all is a field nobody placed: loud. A list that simply does not
+   // include 'form' is a deliberate exclusion and stays silent.
    if (!field.ui?.visibility || !Array.isArray(field.ui.visibility)) {
-     logger.debug(`[DSX] Field "${field.name}" has no visibility config`);
+     fields.push(fieldError(field.name, `has no ui.visibility, so it appears on no screen. Add ui.visibility: ['form'] (and/or 'table', 'view') to the field in the model.`));
      continue;
    }
    
@@ -197,14 +243,14 @@ const processAllFields = () => {
    } else {
      // Auto-generate component
      if (!field.ui.component) {
-       logger.warn(`[DSX] Field "${field.name}" has no component specified`);
+       fields.push(fieldError(field.name, `is visible in this form but declares no ui.component, so there is nothing to render it with. Add ui.component: 'dxInput' (or another registered component).`));
        continue;
      }
 
      // Check if component is registered
      const componentType = components[field.ui.component as keyof typeof components];
      if (!componentType) {
-       console.error(`[DSX] Component "${field.ui.component}" not registered for field "${field.name}". Available components:`, Object.keys(components));
+       fields.push(fieldError(field.name, `asks for component '${field.ui.component}', which is not registered here. Registered: ${Object.keys(components).join(', ')}.`));
        continue;
      }
 

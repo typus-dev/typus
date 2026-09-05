@@ -5,6 +5,7 @@ import { registry } from '../registry-adapter';
 import { BaseService } from '@/core/base/BaseService.js';
 import { DslRelation } from '@typus-core/shared/dsl/types';
 import { EventBus } from '@/events/EventBus.js';
+import { isAdmin } from '@/core/security/isAdmin.js';
 
 /**
  * Service for DSL operations
@@ -68,9 +69,66 @@ export class DslService extends BaseService {
             return { error: { message: errorMsg, code: 'MODEL_NOT_FOUND' } };
         }
 
-        // 1.5. Apply ownership filtering if configured
-        if (operation === 'read' && model.ownership?.autoFilter) {
-            filter = this.applyOwnershipFilter(model, filter, user, operation);
+        // 1.5. Apply ownership filtering if configured.
+        //
+        // READ merges the owner into the filter, which is all a findMany needs.
+        //
+        // WRITES CANNOT WORK THAT WAY, and that is how they ended up unguarded: prisma.update and
+        // prisma.delete take a UNIQUE where, so merging `userId` into it is not a narrower query, it is
+        // an invalid one. The call site was therefore written as `operation === 'read' && ...`, and the
+        // models declare ownership.operations ['update','delete'] - the intersection is empty, so for
+        // StorageFile the filter ran on NOTHING while the model read as protected. Proven on staging
+        // 2026-07-25: a role=user account rewrote another user's storage.files.user_id and hard-deleted
+        // another user's row, both 200, and did the same to a model with sequential integer ids, so
+        // a target does not have to be discovered, only counted to). Verified independently before this fix.
+        //
+        // So a write CHECKS instead of filtering: read the target row back through the same ownership
+        // rule and refuse when it is not the caller's. One extra SELECT on writes only, and the caller
+        // gets FORBIDDEN rather than a Prisma error about the shape of `where`.
+        // ownedWhere is the clause a guarded write will actually run with: the caller's identifier AND
+        // the owner. Checking and then writing with a different clause is a time-of-check-to-time-of-use
+        // gap; pinning the owner into the write closes it, and keeps the write scoped even if the
+        // operation is ever changed to updateMany/deleteMany, which accept a non-unique where and would
+        // otherwise silently reopen this. Verified on Prisma 6.8: update/delete accept a unique id plus
+        // a non-unique field and answer P2025 when the extra condition does not match.
+        let ownedWhere: any = null;
+        if (model.ownership?.autoFilter) {
+            if (operation === 'read' || operation === 'count') {
+                // #2895: count is a read that returns a number. Leaving it unscoped meant an ordinary
+                // user's count on an owned model answered with EVERY user's rows - the total the scoped read
+                // exists to withhold. Only for a caller who has an identity; an anonymous count falls
+                // through to the CASL check below, which is what should be refusing it.
+                if (operation === 'read' || user?.id) {
+                    filter = this.applyOwnershipFilter(model, filter, user, operation);
+                }
+            } else if (operation === 'update' || operation === 'delete') {
+                const guard = await this.assertOwnedForWrite(model, modelName, operation, filter, data, user);
+                if (guard.error) return { error: guard.error };
+                ownedWhere = guard.where || null;
+            }
+            // #2895: WHOSE row this becomes is not an ordinary field. Ownership answered "may you write
+            // this row" and said nothing about the owner named in the PAYLOAD, so two things were open:
+            // create could attribute a new row to anyone, and update could hand your own row to someone
+            // else - a file row planted in a victim's library, marked PUBLIC, with their id on it. Not a
+            // takeover (nothing of theirs is touched, and after the handover the guard correctly locks
+            // the attacker out of it), but it moves quotas, storage accounting and whatever their
+            // library UI trusts about the rows it lists.
+            if (operation === 'create' || operation === 'update') {
+                const forged = this.assertOwnershipNotForged(model, data, user);
+                if (forged) return forged;
+            }
+        }
+
+        // 1.6. Anonymous reads on a public-scoped model only ever see public rows.
+        // WHY #2838: StorageFile.read grants anonymous (needed to serve public files by id via the
+        // /:fileId route), but DslPreAuthMiddleware nulls the user for anonymous-allowed ops and the
+        // DSL grants an operation with no row condition - so an unauthenticated POST /api/dsl returned
+        // every file's metadata, PRIVATE rows included. Scope anonymous reads to the public value.
+        // Only truly-anonymous callers (no user.id) are affected; by-id serving via getFileById, whose
+        // caller carries a user id and which enforces owner/public itself, is untouched.
+        if (operation === 'read' && (!user || !user.id) && (model as any).anonymousReadScope) {
+            const { field, publicValue } = (model as any).anonymousReadScope;
+            filter = { ...(filter || {}), [field]: publicValue };
         }
 
         // 2. Check access permissions using CASL
@@ -250,8 +308,10 @@ export class DslService extends BaseService {
                     break;
 
                 case 'update':
+                    // ownedWhere carries the caller's identifier AND the owner for a guarded model, so
+                    // the row written is by construction the row that was authorised.
                     result = await this.prisma[camelCaseModelName].update({
-                        where: filter,
+                        where: ownedWhere || filter,
                         data: preparedData
                     });
 
@@ -259,22 +319,17 @@ export class DslService extends BaseService {
                     break;
 
                 case 'delete':
-                    let whereClauseForDelete = filter;
-                    if (!whereClauseForDelete && data && data.id !== undefined) {
-
-                        const idField = model.fields.find(f => f.primaryKey);
-                        let idValue;
-
-                        if (idField?.type === 'string') {
-                            idValue = data.id;
-                        } else {
-                            idValue = typeof data.id === 'string' ? parseInt(data.id, 10) : data.id;
-                            if (isNaN(idValue)) {
-                                return { error: { message: `Invalid ID format for delete on ${modelName}`, code: 'INVALID_INPUT' } };
-                            }
+                    // Resolved by the same helper the ownership check used, so the row this deletes is
+                    // by construction the row that was checked. These were separate once and the two
+                    // coerced a numeric-string id differently, which was enough to delete other
+                    // people's rows past the guard.
+                    let whereClauseForDelete = ownedWhere;
+                    if (!whereClauseForDelete) {
+                        const resolvedDelete = this.resolveWriteWhere(model, modelName, 'delete', filter, data);
+                        if (resolvedDelete.error) {
+                            return { error: resolvedDelete.error };
                         }
-
-                        whereClauseForDelete = { id: idValue };
+                        whereClauseForDelete = resolvedDelete.where;
                     }
 
                     if (!whereClauseForDelete) {
@@ -635,17 +690,18 @@ export class DslService extends BaseService {
         filter?: any,
         user?: any
     ): Promise<{ error?: { message: string, code: string } }> {
-        // If no access control defined, require authentication by default
+        // WHY this denies (#2897): a model with no `access` block used to mean "any authenticated user
+        // may do anything to it". A missing declaration is an omission, not a grant, and it is a SILENT
+        // one - nothing tells you a model shipped wide open, which is exactly how the payments models sat
+        // readable for weeks. Deny instead, so a new model is unreachable until somebody writes down who
+        // may touch it. No model in the tree relies on the old behaviour: every one declares access today.
         if (!model.access) {
-            if (!user) {
-                return {
-                    error: {
-                        message: 'Authentication required',
-                        code: 'UNAUTHORIZED'
-                    }
-                };
-            }
-            return {}; // Allow any authenticated user
+            return {
+                error: {
+                    message: `Model '${model.name}' declares no access rules`,
+                    code: 'FORBIDDEN'
+                }
+            };
         }
 
         // Check for anonymous access
@@ -893,7 +949,14 @@ export class DslService extends BaseService {
             case 'read': return 'read';
             case 'update': return 'update';
             case 'delete': return 'delete';
-            case 'count': return 'read'; // Count is similar to read operation
+            // #2895: count is NOT read. Collapsing them meant every model's `access.count` declaration
+            // was dead code - authorisation was decided by `access.read` instead - and all 50 models in
+            // this codebase declare count, almost all of them ['admin']. StorageFile is the proof: it
+            // declares count:['admin'] and any signed-in user still got exact totals, including the
+            // PRIVATE file count for an arbitrary userId, which is an enumeration oracle.
+            // Paginated reads are unaffected: their total is counted inside the read branch, under the
+            // read permission, and is already ownership-scoped.
+            case 'count': return 'count';
             default: return operation;
         }
     }
@@ -995,6 +1058,166 @@ export class DslService extends BaseService {
     }
 
     /**
+     * The write-side half of ownership: prove the row being written belongs to the caller.
+     *
+     * Returns an error envelope to hand straight back, or null when the write may proceed. Deliberately
+     * the SAME answer - FORBIDDEN - whether the row belongs to someone else or does not exist, so
+     * naming an id tells the caller nothing about what exists.
+     */
+    private async assertOwnedForWrite(
+        model: any, modelName: string, operation: string, filter: any, data: any, user: any
+    ): Promise<{ error?: { message: string, code: string }, where?: any }> {
+        const ownership = model.ownership;
+        const allowedOps = ownership.operations || ['read', 'update', 'delete'];
+        if (!allowedOps.includes(operation)) return {};
+
+        const callerIsAdmin = isAdmin(user);
+        if (ownership.adminBypass !== false && callerIsAdmin) return {};
+
+        if (!user || !user.id) {
+            return { error: { message: 'Authentication required', code: 'UNAUTHORIZED' } };
+        }
+
+        const deny = {
+            error: {
+                message: `You are not allowed to ${operation} this ${model.name}`,
+                code: 'FORBIDDEN',
+            },
+        };
+
+        // The identifier is resolved by the SAME helper the operation uses, so the check and the write
+        // cannot end up looking at different rows. The first version of this method built its own
+        // `{ id: data.id }` from the raw value, and that divergence was immediately exploitable:
+        // `delete {data:{id:"283"}}` (a numeric STRING) made the probe query an Int column with a
+        // string, Prisma threw, the throw was swallowed, and the delete then coerced the same value
+        // with parseInt and removed another user's row. Found by adversarial review of the first fix.
+        const resolved = this.resolveWriteWhere(model, modelName, operation, filter, data);
+        if (resolved.error) return { error: resolved.error };
+        // A guarded write with no identifier is refused rather than waved through. The operation would
+        // fail on its own anyway, so nothing legitimate is lost, and "the operation will probably fail"
+        // is not a permission verdict.
+        if (!resolved.where) return deny;
+
+        const ownedWhere = { ...resolved.where, [ownership.field]: user.id };
+        const camelCaseModelName = modelName.charAt(0).toLowerCase() + modelName.slice(1);
+        let probeFailed = false;
+        const owned = await this.prisma[camelCaseModelName].findFirst({
+            where: ownedWhere,
+            select: { [ownership.field]: true },
+        }).catch((e: any) => {
+            probeFailed = true;
+            this.logger.warn('[DslService.assertOwnedForWrite] ownership probe failed - DENYING', {
+                model: model.name, operation, userId: user.id,
+                error: String(e?.message || e).slice(0, 200),
+            });
+            return null;
+        });
+
+        // FAIL CLOSED. A gate that cannot answer must say no: the alternative is that any input which
+        // breaks the probe but not the operation walks straight through, which is exactly how the
+        // first version of this fix was defeated. A caller who sent a genuinely malformed filter gets
+        // FORBIDDEN instead of a 400 - a worse error message, in exchange for a guard that holds.
+        if (probeFailed || !owned) {
+            if (!probeFailed) {
+                this.logger.warn('[DslService.assertOwnedForWrite] DENIED', {
+                    model: model.name, operation, userId: user.id, where: resolved.where,
+                });
+            }
+            return deny;
+        }
+        // Hand the pinned clause back so the WRITE runs with it too, not just the check.
+        return { where: ownedWhere };
+    }
+
+    /**
+     * A non-admin may only ever name THEMSELVES as the owner (#2895).
+     *
+     * Refused rather than silently rewritten, following what /api/users already does with privileged
+     * fields: a request that asks for something it may not have should be told so, not quietly served
+     * something else. Nothing legitimate is lost - the upload path sends `userId: user.id`, which is
+     * exactly what this permits - and a caller who omits the field is untouched, so ordinary updates of
+     * ordinary fields do not have to know this rule exists.
+     */
+    private assertOwnershipNotForged(
+        model: any, data: any, user: any
+    ): { error: { message: string, code: string } } | null {
+        const field = model.ownership?.field;
+        if (!field || !data || typeof data !== 'object') return null;
+        if (!(field in data) || data[field] === undefined) return null;   // not naming an owner at all
+
+        const callerIsAdmin = isAdmin(user);
+        if (model.ownership.adminBypass !== false && callerIsAdmin) return null;
+
+        if (!user || !user.id) {
+            return { error: { message: 'Authentication required', code: 'UNAUTHORIZED' } };
+        }
+        // Loose comparison on purpose: the id arrives as a number from one caller and a string from
+        // another, and "107" naming user 107 is not an attempt at anything.
+        if (String(data[field]) !== String(user.id)) {
+            this.logger.warn('[DslService.assertOwnershipNotForged] DENIED', {
+                model: model.name, field, claimed: data[field], userId: user.id,
+            });
+            return {
+                error: {
+                    message: `You may not set ${field} to another user on ${model.name}`,
+                    code: 'FORBIDDEN',
+                },
+            };
+        }
+        return null;
+    }
+
+    /**
+     * The row identifier a write will actually act on. ONE place, used by both the ownership check and
+     * the operation itself - if these two ever derive it separately they will disagree about type
+     * coercion, and a guard that inspects a different row than the write is no guard at all.
+     */
+    private resolveWriteWhere(
+        model: any, modelName: string, operation: string, filter: any, data: any
+    ): { where?: any, error?: { message: string, code: string } } {
+        const idField = model.fields?.find((f: any) => f.primaryKey);
+        // The bare envelope, NOT { error: ... }: callers wrap it themselves. Nesting it twice hides the
+        // code from BaseController's status mapping, which then reads a caller's typo as INTERNAL_ERROR.
+        const badId = { message: `Invalid ID format for ${operation} on ${modelName}`, code: 'INVALID_INPUT' };
+
+        // Coerce a scalar primary key to the column's own type, ONCE, so the check and the write read
+        // the same value. STRICTLY: only a clean integer literal converts. parseInt is lenient enough to
+        // turn "286abc" into 286 and " 286" into 286, which means two callers can disagree about which
+        // row a request names - the exact shape that let a numeric-string id past the first version of
+        // this guard. Anything else is refused as malformed input rather than guessed at.
+        const coerceId = (raw: any): { value?: any, error?: any } => {
+            if (raw === null || typeof raw === 'object') return { error: badId };   // {gte:1}, [286], null
+            if (idField?.type === 'string') return { value: raw };
+            if (typeof raw === 'number') return Number.isInteger(raw) ? { value: raw } : { error: badId };
+            if (typeof raw === 'string' && /^-?\d+$/.test(raw)) {
+                const n = parseInt(raw, 10);
+                return Number.isSafeInteger(n) ? { value: n } : { error: badId };
+            }
+            return { error: badId };
+        };
+
+        if (filter) {
+            // Only a scalar id is normalised. A structural filter ({in:[...]}, OR, ...) is left exactly
+            // as sent: update/delete require a unique where, so the operation will reject it, and a
+            // guarded write additionally has the probe refusing it first.
+            if (filter.id !== undefined && (filter.id === null || typeof filter.id !== 'object')) {
+                const c = coerceId(filter.id);
+                if (c.error) return { error: c.error };
+                return { where: { ...filter, id: c.value } };
+            }
+            return { where: filter };
+        }
+
+        // Only delete has the data.id fallback; update takes its target from the filter alone.
+        if (operation === 'delete' && data && data.id !== undefined) {
+            const c = coerceId(data.id);
+            if (c.error) return { error: c.error };
+            return { where: { id: c.value } };
+        }
+        return {};
+    }
+
+    /**
      * Apply ownership filter to ensure users only see their own resources
      */
     private applyOwnershipFilter(model: any, filter: any, user: any, operation: string): any {
@@ -1004,14 +1227,22 @@ export class DslService extends BaseService {
             return filter;
         }
 
-        // Check if operation is in allowed operations
+        // Check if operation is in allowed operations.
+        //
+        // count is ALWAYS scoped on a model that declares ownership at all (#2895), whether or not the
+        // model enrolled 'read'. The first attempt at this mapped count onto 'read' and so inherited
+        // read's enrolment - which left StorageFile leaking, because it deliberately excludes 'read'
+        // (its read is guarded in the service layer instead). A model that has an owner per row has no
+        // reading of "you may count rows that are not yours", so this does not wait to be opted into.
         const allowedOps = ownership.operations || ['read', 'update', 'delete'];
-        if (!allowedOps.includes(operation)) {
+        if (operation !== 'count' && !allowedOps.includes(operation)) {
             return filter;
         }
 
-        // Admin bypass check
-        if (ownership.adminBypass !== false && user?.role === 'admin') {
+        // Admin bypass check.
+        // WHY isAdmin() and not user.role: AuthMiddleware puts a roles ARRAY on the request user and no
+        // singular `role`, so this branch never fired and adminBypass did nothing on any model (#4167).
+        if (ownership.adminBypass !== false && isAdmin(user)) {
             this.logger.debug('[DslService.applyOwnershipFilter] Admin bypass enabled', {
                 model: model.name,
                 userId: user.id

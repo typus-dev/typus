@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import { TokenService } from './TokenService';
 import { AuthHelperService } from './AuthHelperService';
-import { BadRequestError, NotFoundError } from '../../../core/base/BaseError.js';
+import { BadRequestError, NotFoundError, UnauthorizedError } from '../../../core/base/BaseError.js';
 import { UserRole } from '../../../constants/index.js';
 import { FileSystemService } from '../../storage/services/FileSystemService.js';
 
@@ -178,6 +178,15 @@ export class ProfileManagementService extends BaseService {
     async googleLogin(token: string): Promise<{ user: any; accessToken: string; refreshToken: string; abilityRules?: any[] }> {
         this.logger.debug('[ProfileManagementService] Processing Google OAuth login request');
 
+        // WHY: verifyIdToken only checks WHO the token was issued for when an audience is passed. With
+        // GOOGLE_CLIENT_ID unset, audience is empty, the check is skipped, and any Google-signed ID
+        // token -- including one minted by an attacker's own OAuth app -- would verify here and create
+        // an account. An unconfigured provider must refuse to run, not run without its safety check.
+        if (!global.env.GOOGLE_CLIENT_ID) {
+            this.logger.error('[ProfileManagementService] Google login attempted while GOOGLE_CLIENT_ID is not configured');
+            throw new BadRequestError('Google sign-in is not available');
+        }
+
         // Verify Google token
         this.logger.debug('[ProfileManagementService] Verifying Google token');
         try {
@@ -252,6 +261,21 @@ export class ProfileManagementService extends BaseService {
                         data: updateData
                     });
                 }
+            }
+
+            // WHY: the password path refuses a session to an unapproved account (PasswordAuth.initiate),
+            // this one did not. That made Google the way around a closed signup: sign in once, get an
+            // account and a live session, no approval, no waitlist. Same gate, same place in the flow.
+            if (!user.isApproved) {
+                this.logger.warn('[ProfileManagementService] Google login refused: account is not approved', { userId: user.id });
+                throw new UnauthorizedError('Account pending approval');
+            }
+
+            // WHY: a user who turned on 2FA must be challenged here too, otherwise Google sign-in is a
+            // documented way to skip the second factor entirely.
+            if (user.isTwoFactorEnabled) {
+                this.logger.info('[ProfileManagementService] Google login requires 2FA', { userId: user.id });
+                throw new UnauthorizedError('This account uses two-factor authentication. Sign in with your email and password.');
             }
 
             // Generate tokens using TokenService

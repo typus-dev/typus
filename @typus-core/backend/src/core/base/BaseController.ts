@@ -235,12 +235,19 @@ export abstract class BaseController extends CoreBase {
       return this.badRequest(res, error.message, 'DUPLICATE_ENTRY');
     }
 
-    // Check for known error types
-    if (error.status === 400 || error.code === 'BAD_REQUEST') {
+    // Check for known error types.
+    // INVALID_INPUT belongs here and was missing: the DSL raises it for a malformed identifier - an id
+    // that is an object, an array, or a string that is not an integer literal - which is the caller's
+    // mistake, not ours. Falling through to the bottom of this method turned every one of those into a
+    // 500 INTERNAL_ERROR, so a user's typo read as an outage and paged whoever watches 5xx. The code is
+    // passed through so the client still sees WHICH kind of bad request it was.
+    if (error.status === 400 || error.code === 'BAD_REQUEST' || error.code === 'INVALID_INPUT') {
       return this.badRequest(res, error.message, error.code || 'BAD_REQUEST');
     }
 
-    if (error.status === 404 || error.code === 'NOT_FOUND') {
+    // MODEL_NOT_FOUND joins NOT_FOUND for the same reason INVALID_INPUT joins BAD_REQUEST above: naming
+    // a model that does not exist is the caller's mistake, and it was answering 500 INTERNAL_ERROR.
+    if (error.status === 404 || error.code === 'NOT_FOUND' || error.code === 'MODEL_NOT_FOUND') {
       return this.notFound(res, error.message);
     }
 

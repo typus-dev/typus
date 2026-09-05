@@ -71,7 +71,7 @@ export const AuthRoleModel: DslModel = {
 
   access: {
     create: ['admin'],
-    read: ['admin', 'user'],
+    read: ['admin'], // WHY #2820: only the admin user-management console reads roles; a DSL read for role user exposed role names and ability rules. Admin-only.
     update: ['admin'],
     delete: ['admin'],
     count: ['admin']

@@ -253,7 +253,12 @@ export class AuthController extends BaseController {
 
             this.logger.debug('[AuthController] Verification result', { result });
 
-            return result;
+            // WHY: this endpoint is unauthenticated and it used to return the freshly minted token /
+            // code in the response body. Anyone who knew an address could ask for a link, read the
+            // secret out of the HTTP response and verify a mailbox they do not own. The point of the
+            // mail is that only its owner sees the value, so the caller only gets the message.
+            const { token: _token, code: _code, ...safe } = (result || {}) as any;
+            return safe;
 
         } catch (error) {
             this.logger.error('[AuthController] Send verification request failed', {

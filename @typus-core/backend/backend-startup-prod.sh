@@ -155,6 +155,52 @@ echo "📂 Client size: $(du -sh ${PRISMA_CLIENT_DIR} | cut -f1)"
 MANIFEST_PATH="${APP_ROOT}/typus-manifest.json"
 SCHEMA_PATH="${APP_ROOT}/data/prisma/schemas/schema.prisma"
 
+# HOW THIS INSTALL APPLIES ITS SCHEMA.
+#
+#   push     the schema generated from the DSL models is pushed to the database on EVERY start.
+#            "Declare a model, restart, get a table" -- the promise the engine is built around.
+#            It can drop a column that no longer exists in a model, which is why it is not the
+#            default and must not be the choice on a database with data you care about.
+#   migrate  (default, and what this script has always done) only migration FILES are applied, and
+#            only once, gated by migrations_applied in the manifest.
+#   none     nothing is applied; you run prisma yourself.
+#
+# WHY THIS EXISTS: docker-compose.local.yml -- the "clone and docker compose up" profile everyone
+# starts with -- is built from this prod image, so it inherited `migrate`. There is exactly one
+# migration file in the tree, from October 2025, holding the core tables. So a model added after
+# that date, which means EVERY plugin model and any model a reader writes while following the
+# documentation, was silently never given a table: the API answered, the registry knew the model,
+# and Prisma failed on a table that did not exist. Measured 2026-09-05 on a clean stand: not one
+# plugin table existed, for any plugin in the tree.
+DB_SCHEMA_SYNC="${DB_SCHEMA_SYNC:-migrate}"
+DB_PROVIDER="${DB_PROVIDER:-mysql}"
+
+# SQLite has no migration story here, and never had: it has always been pushed.
+if [ "${DB_PROVIDER}" = "sqlite" ] && [ "${DB_SCHEMA_SYNC}" = "migrate" ]; then
+  DB_SCHEMA_SYNC="push"
+fi
+
+echo "🗄️  Schema sync mode: ${DB_SCHEMA_SYNC} (DB_SCHEMA_SYNC), provider: ${DB_PROVIDER}"
+
+if [ "${DB_SCHEMA_SYNC}" = "push" ]; then
+  # Every start, not once: this is what makes a newly declared model appear as a table without
+  # anyone writing a migration. prisma db push is idempotent.
+  echo "🔄 Applying schema to database (prisma db push)..."
+  if npx prisma db push --schema="${SCHEMA_PATH}" --accept-data-loss --skip-generate; then
+    echo "✅ Schema applied"
+  else
+    echo "❌ prisma db push failed -- the application would run against a database that does not"
+    echo "   match its own models, so it is not being started."
+    exit 1
+  fi
+elif [ "${DB_SCHEMA_SYNC}" = "none" ]; then
+  echo "⏭️  Schema sync disabled (DB_SCHEMA_SYNC=none)."
+  echo "   Apply it yourself: npx prisma db push --schema=${SCHEMA_PATH}"
+else
+  echo "ℹ️  Schema comes from migration files only. A model added since the last migration will NOT"
+  echo "   get a table; write a migration, or set DB_SCHEMA_SYNC=push on a development database."
+fi
+
 # Check if migrations already applied (from manifest)
 if [ -f "${MANIFEST_PATH}" ]; then
   MIGRATIONS_APPLIED=$(cat "${MANIFEST_PATH}" | grep -o '"migrations_applied"[[:space:]]*:[[:space:]]*true' || echo "")
@@ -166,18 +212,10 @@ if [ -f "${MANIFEST_PATH}" ]; then
     echo "⏳ Waiting for database connection..."
     sleep 3
 
-    # Check database provider
-    DB_PROVIDER="${DB_PROVIDER:-mysql}"
-
-    # Run migrations (or db push for SQLite)
-    if [ "$DB_PROVIDER" = "sqlite" ]; then
-      echo "📦 Using SQLite - running db push..."
-      if npx prisma db push --schema="${SCHEMA_PATH}" --accept-data-loss --skip-generate; then
-        echo "✅ SQLite database synchronized successfully"
-      else
-        echo "❌ SQLite db push failed!"
-        exit 1
-      fi
+    # The schema itself was already handled above, according to DB_SCHEMA_SYNC. What is left here
+    # is the part that genuinely belongs to a first start: the baseline seed.
+    if [ "${DB_SCHEMA_SYNC}" != "migrate" ]; then
+      echo "✅ Schema already applied above (DB_SCHEMA_SYNC=${DB_SCHEMA_SYNC})"
     else
       if npx prisma migrate deploy --schema="${SCHEMA_PATH}"; then
         echo "✅ Database migrations applied successfully"

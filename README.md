@@ -112,7 +112,9 @@ cp .env.example .env.prod
 
 ## Documentation
 
-Coming soon at [typus.dev/docs](https://typus.dev/docs)
+- Production deployment (domain + HTTPS): [PRODUCTION.md](PRODUCTION.md)
+- Maintainers: release process checklist: [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md)
+- More docs coming soon at [typus.dev/docs](https://typus.dev/docs)
 
 ---
 

@@ -139,14 +139,25 @@ const loadFiles = async () => {
       limit: pageData.pageSize
     }
 
-    // Get both data and total count in parallel (like in dispatcher)
-    const [filesResponse, total] = await Promise.all([
-      DSL.StorageFile.findMany(filter, ['user'], queryOptions),
-      DSL.StorageFile.count(filter)
-    ])
+    // ONE request. The total comes from the same paginated read that fetches the rows, not from a
+    // separate count.
+    //
+    // WHY: this used to be `Promise.all([findMany, count])`, and StorageFile declares
+    // `access.count: ['admin']`. That declaration is now enforced (#2895 - count used to be authorised
+    // as a read, which made every model's count declaration dead code and let any signed-in user read
+    // exact totals, including another user's private-file count). This page is NOT admin-gated - its
+    // route meta is `subject: 'storage'` and StorageFile grants read to `user` - so the count began
+    // answering 403, and because it sat inside Promise.all the rejection took the WHOLE load down: the
+    // page showed an error and no files at all, rather than a missing number.
+    //
+    // The fix is not to loosen the declaration. findMany already returns paginationMeta.total for the
+    // same filter, under the read permission the caller demonstrably has, so the second request was
+    // redundant as well as fatal.
+    const filesResponse: any = await DSL.StorageFile.findMany(filter, ['user'], queryOptions)
 
     // Extract data from DSL response (DSL returns { data: [...], paginationMeta: {...} })
     const files = filesResponse?.data || filesResponse || []
+    const total = filesResponse?.paginationMeta?.total ?? files.length
 
     pageData.files = files
     pageData.totalFiles = total || 0

@@ -15,7 +15,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install tsx globally for TypeScript execution, pnpm, and Prisma CLI for dev startup
-RUN npm install -g tsx pnpm prisma@6.8.2
+# Pinned on purpose. `npm install -g pnpm` takes whatever is newest THE DAY YOU BUILD, so this
+# image changed behaviour by the calendar: the lockfile here is lockfileVersion 9, and pnpm 10
+# turned ignored build scripts into a hard error (ERR_PNPM_IGNORED_BUILDS), which broke
+# `git clone && docker compose up` for everyone from the day pnpm 10 shipped, with no change on
+# our side. A build tool is a dependency and gets a version like any other.
+RUN npm install -g tsx pnpm@9 prisma@6.8.2
 
 # Create app directory
 WORKDIR /app

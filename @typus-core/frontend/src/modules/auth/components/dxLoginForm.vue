@@ -1,6 +1,6 @@
 <!-- src/modules/auth/components/TLoginForm.vue -->
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useAuthForm, type AuthFormEvents } from '@/modules/auth/composables/useAuthForm'
 import { useAuthStore, useAppStore } from '@/core/store'
 import { initGoogleAuth, getGoogleOAuthToken } from '@/shared/utils/googleAuth'
@@ -10,6 +10,14 @@ import { DEFAULT_2FA_METHOD, TWO_FACTOR_METHOD_OPTIONS, TwoFactorMethod } from '
 const authStore = useAuthStore()
 const appStore = useAppStore()
 const { errorModal } = useModals()
+
+// WHY: the Google button rendered unconditionally, including on installs where no client id is
+// configured. There it can only fail: googleAuth aborts with "no client id" and the backend now
+// refuses the route outright (an empty audience means the ID token's origin is never checked).
+// A provider that is not configured should not offer a button.
+const googleEnabled = computed(() => Boolean(
+  (window as any).__GOOGLE_CLIENT_ID__ || import.meta.env.VITE_GOOGLE_CLIENT_ID
+))
 
 // Define emits based on the events triggered by the composable
 const emit = defineEmits<{
@@ -157,7 +165,7 @@ watch(requiresTwoFactor, async (isNowRequired) => {
     <!-- Standard Login Form View -->
     <div v-if="!requiresTwoFactor">
       <!-- Google Button -->
-      <div class="mb-6">
+      <div v-if="googleEnabled" class="mb-6">
         <dxButton
           variant="outline"
           size="lg"
@@ -171,8 +179,8 @@ watch(requiresTwoFactor, async (isNowRequired) => {
         </dxButton>
       </div>
 
-      <!-- Separator -->
-      <div class="flex items-center gap-3 mb-6">
+      <!-- Separator (only meaningful when there is a second way to sign in) -->
+      <div v-if="googleEnabled" class="flex items-center gap-3 mb-6">
         <div class="glow-line flex-1"></div>
         <div :class="['theme-colors-text-secondary', 'theme-typography-size-sm']">or</div>
         <div class="glow-line flex-1"></div>

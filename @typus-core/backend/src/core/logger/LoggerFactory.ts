@@ -1,6 +1,8 @@
 import { Logger } from './Logger.js';
 import { ILogger } from './ILogger.js';
 import { LoggerConfig } from './LoggerConfig.js';
+import winston from 'winston';
+import { createDatabaseFormat } from './transports/PrismaTransport.js';
 
 /**
  * Logger factory for consistent logger creation
@@ -48,10 +50,18 @@ export class LoggerFactory {
       const { standardTransports, databaseTransports } = LoggerConfig.createTransports(config);
       const allTransports = [...standardTransports, ...databaseTransports];
 
+      // Build the format the SAME way the constructor does, so the DB log writer
+      // (createDatabaseFormat) is in the chain exactly when database mode is on. Without this the
+      // reader transport is added but the writer is missing and no rows are ever written (#2699).
+      const format = databaseTransports.length > 0
+        ? winston.format.combine(winston.format.timestamp(), createDatabaseFormat(), winston.format.json())
+        : winston.format.combine(winston.format.timestamp(), winston.format.json());
+
       await logger.reconfigure({
         level: config.level,
-        transports: allTransports
-      });
+        transports: allTransports,
+        format
+      } as any);
 
       console.log('[LoggerFactory] Logger reconfigured from database:', {
         level: config.level,

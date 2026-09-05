@@ -84,12 +84,17 @@ export class StorageController extends BaseController {
             // Prepare effective user object
             let effectiveUser = req.user;
 
-        // Allow userId from formData for TaskWorker OR for public uploads (no auth)
+        // Allow userId from formData for TaskWorker ONLY.
+        // WHY: this used to also accept it when there was NO authenticated user ("public upload"), which
+        // meant an anonymous caller could hand us a userId and we would file their upload under that
+        // person's account. User ids are sequential integers, so that is a one-line takeover of anyone's
+        // storage. An unauthenticated upload now has no owner to claim, and the ownership check below
+        // rejects it. The task worker keeps the ability because it uploads on behalf of a real user
+        // inside a job it was given.
         if (req.body.userId) {
             const formUserId = parseInt(req.body.userId, 10);
             if (!isNaN(formUserId) && formUserId > 0) {
-                // If user is TaskWorker OR no auth (public upload), use formData userId
-                if ((req.user as any)?.isTaskWorker || !req.user) {
+                if ((req.user as any)?.isTaskWorker) {
                     effectiveUser = {
                         ...req.user,
                         id: formUserId,

@@ -14,6 +14,21 @@ import { modulesConfig } from '@/config/modules.config.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+type LoadStats = { modulesLoaded: number; warnings: number; errors: number; failures?: string[] };
+
+/**
+ * Record a load failure so the startup summary can NAME it.
+ *
+ * WHY: a failed module used to increment a counter and print one line early in a very long boot
+ * log. The application then reported itself healthy while that module's routes simply did not
+ * exist, and the only clue was a "1" in the error row of a table thousands of lines later. A count
+ * says something broke; a name says what to look at.
+ */
+function recordFailure(stats: LoadStats, what: string, error: unknown): void {
+  stats.errors++;
+  (stats.failures ??= []).push(`${what}: ${error instanceof Error ? error.message : String(error)}`);
+}
+
 export class ModuleLoader {
 
   // =================================================================
@@ -148,7 +163,7 @@ export class ModuleLoader {
 
         loadedModules.push(moduleInstance);
       } catch (error) {
-        stats.errors++;
+        recordFailure(stats, `core module ${coreDir}`, error);
         global.logger.error(`[ModuleLoader] Failed to load core module in directory ${coreDir}:`, error);
 
         if (!modulesConfig.ignoreLoadErrors) {
@@ -248,7 +263,7 @@ export class ModuleLoader {
 
         loadedModules.push(moduleInstance);
       } catch (error) {
-        stats.errors++;
+        recordFailure(stats, `module ${moduleDir}`, error);
         global.logger.error(`[ModuleLoader] Failed to load module in directory ${moduleDir}:`, error);
 
         if (!modulesConfig.ignoreLoadErrors) {
@@ -338,7 +353,7 @@ export class ModuleLoader {
       }
       stats.modulesLoaded++;
     } catch (error) {
-      stats.errors++;
+      recordFailure(stats, `module ${ModuleClass?.name || folder}`, error);
       global.logger.error(`[ModuleLoader] Failed to instantiate module ${ModuleClass?.name || folder}:`, error);
       if (!modulesConfig.ignoreLoadErrors) {
         throw error;
@@ -601,6 +616,20 @@ export class ModuleLoader {
           // Check if exported value is a TaskHandler class (ends with 'TaskHandler')
           if (typeof exportedValue === 'function' && exportName.endsWith('TaskHandler')) {
             try {
+              // The decorator is not decoration. @Service() is what registers the class as a
+              // singleton in the container; without it the handler is constructed ad hoc, its
+              // injected dependencies are not resolved, and whether it works at all depends on
+              // what its constructor happens to need. Refuse now, by name, instead of leaving a
+              // queued task waiting for a handler that half exists.
+              const componentType = Reflect.getMetadata('component:type', exportedValue as any);
+              if (!componentType) {
+                throw new Error(
+                  `${exportName} is missing @Service(). A task handler must be decorated with ` +
+                  `@Service() from '@/core/decorators/component', or it is never registered properly ` +
+                  `and tasks of its type wait forever.`
+                );
+              }
+
               // Resolve handler instance through DI container
               const handlerInstance = container.resolve(exportedValue as any);
 
@@ -614,7 +643,7 @@ export class ModuleLoader {
               registeredCount++;
               stats.modulesLoaded++;
             } catch (error) {
-              stats.errors++;
+              recordFailure(stats, `task handler ${exportName} (plugin ${pluginName})`, error);
               global.logger.error(`[ModuleLoader] Failed to register handler ${exportName} from ${pluginName}:`, error);
 
               if (!modulesConfig.ignoreLoadErrors) {
@@ -626,7 +655,7 @@ export class ModuleLoader {
           }
         }
       } catch (error) {
-        stats.errors++;
+        recordFailure(stats, `handler file ${handlerFileName} (plugin ${pluginName})`, error);
         global.logger.error(`[ModuleLoader] Failed to load handler file ${handlerFileName} from ${pluginName}:`, error);
 
         if (!modulesConfig.ignoreLoadErrors) {
